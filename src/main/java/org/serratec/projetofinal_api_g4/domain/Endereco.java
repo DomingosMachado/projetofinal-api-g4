@@ -1,10 +1,10 @@
 package org.serratec.projetofinal_api_g4.domain;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.Embeddable;
 import lombok.Data;
 
 @Data
-@Entity
+@Embeddable
 public class Endereco {
 
     private String cep;

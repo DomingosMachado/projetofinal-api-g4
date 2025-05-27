@@ -3,6 +3,7 @@ package org.serratec.projetofinal_api_g4.domain;
 import org.hibernate.validator.constraints.br.CPF;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,7 +41,7 @@ public class Cliente {
     @Column(unique = true)
     private String cpf;
 
-    @NotBlank(message = "O CEP do cliente é obrigatório")
-    private String cep;
+    @Embedded
+    private Endereco endereco;
 
 }
