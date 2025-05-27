@@ -1,0 +1,26 @@
+package org.serratec.projetofinal_api_g4.dto;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.serratec.projetofinal_api_g4.domain.Cliente;
+import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
+
+import lombok.Data;
+
+@Data
+public class PedidoDTO {
+
+  private Long clienteId;
+
+  private List<PedidoProdutoDTO> produtos = new ArrayList<>();
+
+  private BigDecimal valorTotal;
+
+  private LocalDateTime dataPedido;
+
+  private PedidoStatus status;
+
+}
