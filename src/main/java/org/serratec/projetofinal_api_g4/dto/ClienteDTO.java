@@ -1,14 +1,22 @@
 package org.serratec.projetofinal_api_g4.dto;
 
+import org.serratec.projetofinal_api_g4.domain.Cliente;
 import org.serratec.projetofinal_api_g4.domain.Endereco;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.Id;
 import lombok.Data;
 
-@Data
+@NoArgsConstructor
+@AllArgsConstructor 
+@Data 
 public class ClienteDTO {
+
+
+  public ClienteDTO(Cliente cliente) {
+      
+    }
 
   @Id
   private Long id;
