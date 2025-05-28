@@ -26,7 +26,7 @@ public CategoriaDTO() {
   }
 
   public CategoriaDTO(Categoria categoria) {
-    //TODO Auto-generated constructor stub
+    // TO DO Auto-generated constructor stub
   }
     
 
