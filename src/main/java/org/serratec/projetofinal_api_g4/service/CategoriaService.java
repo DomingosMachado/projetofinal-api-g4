@@ -15,7 +15,7 @@ public class CategoriaService {
   private CategoriaRepository categoriaRepository;
 
   @Transactional
-  public CategoriaDTO salvar(CategoriaDTO categoriaDTO) {
+  public CategoriaDTO inserir(CategoriaDTO categoriaDTO) {
     Categoria categoria = new Categoria();
     categoria.setId(categoriaDTO.getId());
     categoria.setNome(categoriaDTO.getNome());
@@ -24,4 +24,28 @@ public class CategoriaService {
     
     return new CategoriaDTO(categoria.getId(), categoria.getNome(), categoria.getDescricao());
   }
+
+
+  @Transactional
+  public CategoriaDTO atualizar(CategoriaDTO categoriaDTO, Long id){
+    Categoria categoria = categoriaRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Categoria não encontrada.id:" + id));
+    categoria.setNome(categoriaDTO.getNome());
+    categoria = categoriaRepository.save(categoria);
+    return new CategoriaDTO(categoria);
+      }
+
+   @Transactional
+   public CategoriaDTO buscarPorId(Long id){
+    Categoria categoria = categoriaRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Categoria não encontrada.id:" + id));
+    return new CategoriaDTO(categoria);
+   }   
+
+   public void deletar(Long id) {
+    if(!categoriaRepository.existsById(id)){
+      throw new RuntimeException("Categoria não encontrada.id:" + id);
+    }
+   categoriaRepository.deleteById(id);     
+}
 }
