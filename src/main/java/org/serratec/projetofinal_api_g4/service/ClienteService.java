@@ -57,7 +57,6 @@ public class ClienteService {
         clienteRepository.deleteById(id);
     }
 
-    @Transactional
     public List<ClienteDTO> listarTodos() {
         List<Cliente> clientes = clienteRepository.findAll();
         return clientes.stream()

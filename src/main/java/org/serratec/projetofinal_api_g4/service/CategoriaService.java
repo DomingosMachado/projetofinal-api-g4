@@ -1,5 +1,8 @@
 package org.serratec.projetofinal_api_g4.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.serratec.projetofinal_api_g4.domain.Categoria;
 import org.serratec.projetofinal_api_g4.dto.CategoriaDTO;
 import org.serratec.projetofinal_api_g4.repository.CategoriaRepository;
@@ -13,6 +16,12 @@ public class CategoriaService {
 
   @Autowired
   private CategoriaRepository categoriaRepository;
+
+  public List<CategoriaDTO> listarTodas() {
+    return categoriaRepository.findAll().stream()
+        .map(categoria -> new CategoriaDTO(categoria))
+        .collect(Collectors.toList());
+  }
 
   @Transactional
   public CategoriaDTO inserir(CategoriaDTO categoriaDTO) {
