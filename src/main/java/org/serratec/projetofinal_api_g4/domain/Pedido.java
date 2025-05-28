@@ -2,6 +2,7 @@ package org.serratec.projetofinal_api_g4.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
@@ -36,7 +37,7 @@ public class Pedido {
     private Cliente cliente;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
-    private List<PedidoProduto> produtos;
+    private List<PedidoProduto> produtos = new ArrayList<>();
 
     @NotNull(message = "O valor total do pedido é obrigatório")
     @Positive(message = "O valor total do pedido deve ser positivo")

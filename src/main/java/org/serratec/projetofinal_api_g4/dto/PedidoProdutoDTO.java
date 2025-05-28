@@ -1,10 +1,9 @@
 package org.serratec.projetofinal_api_g4.dto;
 
-import org.serratec.projetofinal_api_g4.domain.Produto;
+import java.math.BigDecimal;
 
 import org.serratec.projetofinal_api_g4.domain.Pedido;
-
-import java.math.BigDecimal;
+import org.serratec.projetofinal_api_g4.domain.Produto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

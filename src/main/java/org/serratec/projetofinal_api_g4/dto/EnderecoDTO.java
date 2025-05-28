@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true) 
-public class EnderecoViacepDTO {
+public class EnderecoDTO {
  
   
     private String cep;

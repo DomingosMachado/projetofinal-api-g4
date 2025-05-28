@@ -5,7 +5,7 @@ import org.serratec.projetofinal_api_g4.domain.Endereco;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import jakarta.persistence.Id;
+
 import lombok.Data;
 
 @NoArgsConstructor
@@ -18,8 +18,6 @@ public class ClienteDTO {
       
     }
     
-
-  @Id
   private Long id;
 
   private String nome;
@@ -31,4 +29,8 @@ public class ClienteDTO {
   private String cpf;
 
   private Endereco endereco;
-}
+
+   }
+
+
+

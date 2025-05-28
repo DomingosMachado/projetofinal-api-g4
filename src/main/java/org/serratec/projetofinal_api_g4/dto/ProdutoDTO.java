@@ -23,4 +23,5 @@ public class ProdutoDTO {
 
   private Categoria categoria;
 
+  
 }
