@@ -45,7 +45,7 @@ public class FuncionarioService {
         Funcionario funcionario = new Funcionario();
         funcionario.setNome(dto.getNome());
         funcionario.setEmail(dto.getEmail());
-        funcionario.setSenha(passwordEncoder.encode(dto.getSenha())); // Criptografar senha
+        funcionario.setSenha(bCryptPasswordEncoder.encode(dto.getSenha())); // Criptografar senha
         funcionario.setTipoFuncionario(dto.getTipoFuncionario());
 
         funcionario = funcionarioRepository.save(funcionario);
@@ -62,7 +62,7 @@ public class FuncionarioService {
         funcionario.setNome(dto.getNome());
         funcionario.setEmail(dto.getEmail());
         if (dto.getSenha() != null && !dto.getSenha().isEmpty()) {
-            funcionario.setSenha(passwordEncoder.encode(dto.getSenha())); // Atualiza senha se fornecida
+            funcionario.setSenha(bCryptPasswordEncoder.encode(dto.getSenha())); // Atualiza senha se fornecida
         }
         funcionario.setTipoFuncionario(dto.getTipoFuncionario());
 
