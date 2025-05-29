@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.serratec.projetofinal_api_g4.domain.Pedido;
 import org.serratec.projetofinal_api_g4.domain.Produto;
+import org.serratec.projetofinal_api_g4.repository.PedidoProdutoRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,7 +24,10 @@ public class PedidoProdutoDTO {
 
   private Integer quantidade;
 
-  private BigDecimal preco;
+  private BigDecimal valorVenda;
 
+
+
+  
 
 }

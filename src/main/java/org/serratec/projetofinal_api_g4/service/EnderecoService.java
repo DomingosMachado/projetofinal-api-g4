@@ -1,90 +1,59 @@
 package org.serratec.projetofinal_api_g4.service;
-import java.util.list;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import org.serratec.projetofinal_api_g4.domin.endereço;
+
+import org.serratec.projetofinal_api_g4.domain.Endereco;
+
 import org.serratec.projetofinal_api_g4.dto.EnderecoDTO;
 import org.serratec.projetofinal_api_g4.repository.EnderecoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.serratec.projetofinal_api_g4.service.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
-<<<<<<< HEAD
-import org.serratec.projetofinal_api_g4.dto.EnderecoDTO;
-import org.springframework.stereotype.Service;
+
 import org.springframework.web.client.RestTemplate;
 
 @Service
-=======
-@service
->>>>>>> 47591f464b8fcc9b39e8b93f69ab249e78e2d712
 public class EnderecoService {
-    @Autowired
-    private EnderecoRepository enderecoRepository;
 
-    @Transactional
-    public EnderecoDTO buscarPorId(Long id) {
-        Endereco endereco = enderecoRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado. Id: " + id));
-        return new EnderecoDTO(endereco);
-    }
+	@Autowired
+	private EnderecoRepository enderecoRepository;
+	
+	public EnderecoDTO buscar(String cep) {
+		Optional<Endereco> enderecoOpt = enderecoRepository.findByCep(cep);
+		
+		if (enderecoOpt.isPresent()) {
+			EnderecoDTO dto = new EnderecoDTO(enderecoOpt.get());
+			return dto;
+		} else {
+			// buscando na API Externa (viacep)
+			RestTemplate restTemplate = new RestTemplate();
+			String url = "http://viacep.com.br/ws/" + cep + "/json/";
+			Optional<Endereco> enderecoViaCepOpt = Optional.ofNullable(
+					restTemplate.getForObject(url, Endereco.class));
+			if (enderecoViaCepOpt.isPresent() && enderecoViaCepOpt.get().getCep() != null) {
+				Endereco enderecoViaCep = enderecoViaCepOpt.get();
+				String cepSemTraco = enderecoViaCep.getCep().replaceAll("-", "");
+				enderecoViaCep.setCep(cepSemTraco);
+				return inserir(enderecoViaCep);
+			} else {
+				return null;
+			}
+		}
+	}
+	
+	public EnderecoDTO inserir(Endereco endereco) {
+		endereco = enderecoRepository.save(endereco);
+		EnderecoDTO enderecoDTO = new EnderecoDTO(endereco);
+		return enderecoDTO;
+	}
 
-    @Transactional
-    public EnderecoDTO inserir(EnderecoDTO enderecoDTO) {
-        Endereco endereco = new Endereco();
-        endereco.setLogradouro(enderecoDTO.getLogradouro());
-        endereco.setNumero(enderecoDTO.getNumero());
-        endereco.setBairro(enderecoDTO.getBairro());
-        endereco.setCidade(enderecoDTO.getCidade());
-        endereco.setEstado(enderecoDTO.getEstado());
-        endereco.setCep(enderecoDTO.getCep());
-        endereco = enderecoRepository.save(endereco);
-        return new EnderecoDTO(endereco);
-    }
-
-    @Transactional
-    public EnderecoDTO atualizar(EnderecoDTO enderecoDTO, Long id) {
-        Endereco endereco = enderecoRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Endereço não encontrado. Id: " + id));
-        endereco.setLogradouro(enderecoDTO.getLogradouro());
-        endereco.setNumero(enderecoDTO.getNumero());
-        endereco.setBairro(enderecoDTO.getBairro());
-        endereco.setCidade(enderecoDTO.getCidade());
-        endereco.setEstado(enderecoDTO.getEstado());
-        endereco.setCep(enderecoDTO.getCep());
-        endereco = enderecoRepository.save(endereco);
-        return new EnderecoDTO(endereco);
-    }
-
-    @Transactional
-    public void deletar(Long id) {
-        if (!enderecoRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Endereço não encontrado. Id: " + id);
-        }
-        enderecoRepository.deleteById(id);
-    }
-
-    @Transactional
-    public List<EnderecoDTO> listarTodos() {
-        List<Endereco> enderecos = enderecoRepository.findAll();
-        return enderecos.stream()
-            .map(EnderecoDTO::new)
-            .collect(Collectors.toList());
-    }
-
-
-<<<<<<< HEAD
-    private static final String VIACEP_URL = "https://viacep.com.br/ws/{cep}/json/";
-   
-    public EnderecoDTO buscarEnderecoPorCep(String cep) {
-       RestTemplate restTemplate = new RestTemplate();
-        EnderecoDTO endereco = restTemplate.getForObject(VIACEP_URL, EnderecoDTO.class, cep);
-        
-        if (endereco == null || endereco.getCep() == null) {
-            throw new RuntimeException("CEP não encontrado: " + cep);
-        }
-        
-        return endereco;    
-    }
-
+	@Transactional
+	public void deletar(Long id) {
+		if(!enderecoRepository.existsById(id)) {
+			throw new RuntimeException("Endereço não encontrado" + id);
+		}
+		enderecoRepository.deleteById(id);
+	}
 }
