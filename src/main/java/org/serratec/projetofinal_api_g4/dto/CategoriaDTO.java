@@ -1,33 +1,32 @@
 package org.serratec.projetofinal_api_g4.dto;
 
 import org.serratec.projetofinal_api_g4.domain.Categoria;
-
-import jakarta.persistence.Id;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CategoriaDTO {
-
-  @Id
-  private Long id;
-
-  private String nome;
   
-  private String descricao;
+    private Long id;
+    private String nome;
+    private String descricao;
 
- 
-public CategoriaDTO() {
-  }
-
-  public CategoriaDTO(Long id, String nome, String descricao) {
-    this.id = id;
-    this.nome = nome;
-    this.descricao = descricao;
-  }
-
-  public CategoriaDTO(Categoria categoria) {
-    //TODO Auto-generated constructor stub
-  }
- 
-
+    // Construtor para conversão de entidade para DTO
+    public CategoriaDTO(Categoria categoria) {
+        this.id = categoria.getId();
+        this.nome = categoria.getNome();
+        this.descricao = categoria.getDescricao();
+    }
+    
+    // Método para conversão de DTO para entidade
+    public Categoria toEntity() {
+        Categoria categoria = new Categoria();
+        categoria.setId(this.id);
+        categoria.setNome(this.nome);
+        categoria.setDescricao(this.descricao);
+        return categoria;
+    }
 }

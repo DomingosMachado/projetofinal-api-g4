@@ -26,7 +26,7 @@ public class Produto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id; 
 
     @NotBlank(message = "O nome do produto é obrigatório")
     @Size(min = 2, max = 200, message = "O nome do produto deve ter entre 2 e 200 caracteres")
@@ -35,7 +35,7 @@ public class Produto {
 
     private String descricao;
 
-    @Positive(message = "O  preço do produto deve ser positivo")
+    @Positive(message = "O preço do produto deve ser positivo")
     @NotNull(message = "O preço do produto é obrigatório")
     private BigDecimal preco;
 
@@ -50,6 +50,5 @@ public class Produto {
 
     @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL)
     private List<PedidoProduto> pedidoProdutos;
-    
-
 }
+

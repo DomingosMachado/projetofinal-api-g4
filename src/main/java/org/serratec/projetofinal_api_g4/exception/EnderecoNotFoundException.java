@@ -6,7 +6,11 @@ public class EnderecoNotFoundException extends RuntimeException {
         super(message);
     }
     
-    public EnderecoNotFoundException(String message, Throwable cause) {
-        super(message, cause);
+    public EnderecoNotFoundException(Long id) {
+        super("Endereço não encontrado com ID: " + id);
+    }
+    
+    public EnderecoNotFoundException(String cep, String message) {
+        super("Endereço não encontrado para CEP " + cep + ": " + message);
     }
 }

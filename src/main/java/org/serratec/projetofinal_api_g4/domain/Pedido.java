@@ -29,7 +29,7 @@ public class Pedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id; 
 
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
@@ -48,5 +48,4 @@ public class Pedido {
 
     @Enumerated(EnumType.STRING)
     private PedidoStatus status;
-
 }
