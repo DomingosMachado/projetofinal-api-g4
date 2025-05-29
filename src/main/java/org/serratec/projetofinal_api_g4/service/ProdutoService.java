@@ -26,12 +26,10 @@ public class ProdutoService {
 
     @Transactional
     public ProdutoDTO inserir(ProdutoDTO dto) {
-        // Busca a categoria pela ID do DTO
         Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
 
-        // Cria novo produto
         Produto produto = new Produto();
         produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
@@ -39,31 +37,26 @@ public class ProdutoService {
         produto.setQuantidade(dto.getQuantidade());
         produto.setCategoria(categoria);
 
-        // Salva e retorna DTO
         produto = produtoRepository.save(produto);
         return new ProdutoDTO(produto);
     }
 
     @Transactional
     public ProdutoDTO atualizar(Long id, ProdutoDTO dto) {
-        // Busca o produto existente
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
 
-        // Busca a categoria
         Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
 
-        // Atualiza os dados
         produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
         produto.setPreco(dto.getPreco());
         produto.setQuantidade(dto.getQuantidade());
         produto.setCategoria(categoria);
 
-        // Salva e retorna DTO
         produto = produtoRepository.save(produto);
         return new ProdutoDTO(produto);
     }
