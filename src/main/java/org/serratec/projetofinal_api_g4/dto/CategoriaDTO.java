@@ -2,10 +2,13 @@ package org.serratec.projetofinal_api_g4.dto;
 
 import org.serratec.projetofinal_api_g4.domain.Categoria;
 
+<<<<<<< HEAD
 
 import lombok.AllArgsConstructor;
+=======
+import jakarta.persistence.Id;
+>>>>>>> origin/Teste
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor 
@@ -22,7 +25,11 @@ public class CategoriaDTO {
  
 
   public CategoriaDTO(Categoria categoria) {
+<<<<<<< HEAD
    
+=======
+    // TO DO Auto-generated constructor stub
+>>>>>>> origin/Teste
   }
     
 
