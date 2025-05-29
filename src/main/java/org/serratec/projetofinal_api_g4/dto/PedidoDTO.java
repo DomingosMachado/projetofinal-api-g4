@@ -3,9 +3,15 @@ package org.serratec.projetofinal_api_g4.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.serratec.projetofinal_api_g4.domain.Pedido;
 import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,23 +19,36 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor 
 @AllArgsConstructor 
-
 public class PedidoDTO {
 
-  private Long clienteId;
+    private Long id;
 
-  private List<PedidoProdutoDTO> produtos;
+    @NotNull(message = "O cliente é obrigatório")
+    private Long clienteId;
 
-  private BigDecimal valorTotal;
+    @Valid
+    @NotEmpty(message = "O pedido deve conter pelo menos um produto")
+    private List<PedidoProdutoDTO> produtos;
 
-  private LocalDateTime dataPedido;
+    @NotNull(message = "O valor total do pedido é obrigatório")
+    @Positive(message = "O valor total do pedido deve ser positivo")
+    private BigDecimal valorTotal;
 
-  private PedidoStatus status;
-  
-  
+    @NotNull(message = "A data do pedido é obrigatória")
+    private LocalDateTime dataPedido;
 
-  
+    @NotNull(message = "O status do pedido é obrigatório")
+    private PedidoStatus status;
 
-
-  
+    public PedidoDTO(Pedido pedido) {
+        this.id = pedido.getId();
+        this.clienteId = pedido.getCliente() != null ? pedido.getCliente().getId() : null;
+        this.produtos = pedido.getProdutos() != null ? 
+            pedido.getProdutos().stream()
+                .map(PedidoProdutoDTO::new)
+                .collect(Collectors.toList()) : null;
+        this.valorTotal = pedido.getValorTotal();
+        this.dataPedido = pedido.getDataPedido();
+        this.status = pedido.getStatus();
+    }
 }

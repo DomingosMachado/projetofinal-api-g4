@@ -47,8 +47,9 @@ public class PedidoProdutoService {
         pedidoProduto.setSubtotal(dto.getSubtotal());
 
         pedidoProduto = pedidoProdutoRepository.save(pedidoProduto);
-
+        
         return new PedidoProdutoDTO(
+                pedidoProduto.getId(),
                 pedidoProduto.getProduto().getId(),
                 pedidoProduto.getQuantidade(),
                 pedidoProduto.getPrecoUnitario(),
@@ -73,6 +74,7 @@ public class PedidoProdutoService {
         pedidoProduto = pedidoProdutoRepository.save(pedidoProduto);
 
         return new PedidoProdutoDTO(
+                pedidoProduto.getId(),
                 pedidoProduto.getProduto().getId(),
                 pedidoProduto.getQuantidade(),
                 pedidoProduto.getPrecoUnitario(),
@@ -86,6 +88,7 @@ public class PedidoProdutoService {
                         HttpStatus.NOT_FOUND, "PedidoProduto não encontrado com id: " + id));
 
         return new PedidoProdutoDTO(
+                pedidoProduto.getId(),
                 pedidoProduto.getProduto().getId(),
                 pedidoProduto.getQuantidade(),
                 pedidoProduto.getPrecoUnitario(),
@@ -97,6 +100,7 @@ public class PedidoProdutoService {
         List<PedidoProduto> lista = pedidoProdutoRepository.findAll();
         return lista.stream()
                 .map(pp -> new PedidoProdutoDTO(
+                        pp.getId(),
                         pp.getProduto().getId(),
                         pp.getQuantidade(),
                         pp.getPrecoUnitario(),
@@ -111,4 +115,14 @@ public class PedidoProdutoService {
         }
         pedidoProdutoRepository.deleteById(id);
     }
+
+//     @Transactional
+//     public void deletarPorPedido(Long pedidoId) {
+//         // Verifica se o pedido existe
+//         if (!pedidoRepository.existsById(pedidoId)) {
+//             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado com id: " + pedidoId);
+//         }
+        
+//         pedidoProdutoRepository.deleteByPedidoId(pedidoId);
+//     }
 }
