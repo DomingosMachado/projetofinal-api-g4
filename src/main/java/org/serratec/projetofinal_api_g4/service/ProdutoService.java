@@ -1,6 +1,5 @@
 package org.serratec.projetofinal_api_g4.service;
 
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,45 +25,47 @@ public class ProdutoService {
     private CategoriaRepository categoriaRepository;
 
     @Transactional
-    public ProdutoDTO inserir(ProdutoDTO produtoDTO) {
-        Categoria categoria = categoriaRepository.findById(produtoDTO.getCategoria().getId())
+    public ProdutoDTO inserir(ProdutoDTO dto) {
+        // Busca a categoria pela ID do DTO
+        Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + produtoDTO.getCategoria().getId()));
+                        HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
 
+        // Cria novo produto
         Produto produto = new Produto();
-        produto.setNome(produtoDTO.getNome());
-        produto.setDescricao(produtoDTO.getDescricao());
-        produto.setPreco(produtoDTO.getPreco());
-        produto.setQuantidade(produtoDTO.getQuantidade());
+        produto.setNome(dto.getNome());
+        produto.setDescricao(dto.getDescricao());
+        produto.setPreco(dto.getPreco());
+        produto.setQuantidade(dto.getQuantidade());
         produto.setCategoria(categoria);
 
+        // Salva e retorna DTO
         produto = produtoRepository.save(produto);
-        return new ProdutoDTO(produto.getNome(), produto.getDescricao(),
-                produto.getPreco(), produto.getQuantidade(),
-                produto.getCategoria());
+        return new ProdutoDTO(produto);
     }
 
     @Transactional
-    public ProdutoDTO atualizar(Long id, ProdutoDTO produtoDTO) {
+    public ProdutoDTO atualizar(Long id, ProdutoDTO dto) {
+        // Busca o produto existente
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
 
-        Categoria categoria = categoriaRepository.findById(produtoDTO.getCategoria().getId())
+        // Busca a categoria
+        Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + produtoDTO.getCategoria().getId()));
+                        HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
 
-        produto.setNome(produtoDTO.getNome());
-        produto.setDescricao(produtoDTO.getDescricao());
-        produto.setPreco(produtoDTO.getPreco());
-        produto.setQuantidade(produtoDTO.getQuantidade());
+        // Atualiza os dados
+        produto.setNome(dto.getNome());
+        produto.setDescricao(dto.getDescricao());
+        produto.setPreco(dto.getPreco());
+        produto.setQuantidade(dto.getQuantidade());
         produto.setCategoria(categoria);
 
+        // Salva e retorna DTO
         produto = produtoRepository.save(produto);
-
-        return new ProdutoDTO(produto.getNome(), produto.getDescricao(),
-                produto.getPreco(), produto.getQuantidade(),
-                produto.getCategoria());
+        return new ProdutoDTO(produto);
     }
 
     @Transactional
@@ -73,18 +74,14 @@ public class ProdutoService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
 
-        return new ProdutoDTO(produto.getNome(), produto.getDescricao(),
-                produto.getPreco(), produto.getQuantidade(),
-                produto.getCategoria());
+        return new ProdutoDTO(produto);
     }
 
     @Transactional
     public List<ProdutoDTO> listarTodos() {
         List<Produto> produtos = produtoRepository.findAll();
         return produtos.stream()
-                .map(p -> new ProdutoDTO(p.getNome(), p.getDescricao(),
-                        p.getPreco(), p.getQuantidade(),
-                        p.getCategoria()))
+                .map(ProdutoDTO::new)
                 .collect(Collectors.toList());
     }
 
@@ -95,4 +92,20 @@ public class ProdutoService {
         }
         produtoRepository.deleteById(id);
     }
+
+//     @Transactional
+//     public List<ProdutoDTO> buscarPorCategoria(Long categoriaId) {
+//         List<Produto> produtos = produtoRepository.findByCategoriaId(categoriaId);
+//         return produtos.stream()
+//                 .map(ProdutoDTO::new)
+//                 .collect(Collectors.toList());
+//     }
+
+//     @Transactional
+//     public List<ProdutoDTO> buscarPorNome(String nome) {
+//         List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCase(nome);
+//         return produtos.stream()
+//                 .map(ProdutoDTO::new)
+//                 .collect(Collectors.toList());
+//     }
 }
