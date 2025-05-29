@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.serratec.projetofinal_api_g4.domain.PedidoProduto;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -28,8 +29,9 @@ public class PedidoProdutoDTO {
     @Positive(message = "O preço unitário deve ser positivo")
     private BigDecimal precoUnitario;
     
-    @NotNull(message = "O subtotal é obrigatório")
-    @Positive(message = "O subtotal deve ser positivo")
+    @DecimalMin(value = "0.0", message = "O desconto não pode ser negativo")
+    private BigDecimal desconto = BigDecimal.ZERO;
+    
     private BigDecimal subtotal;
 
     public PedidoProdutoDTO(PedidoProduto pedidoProduto) {
@@ -37,6 +39,7 @@ public class PedidoProdutoDTO {
         this.produtoId = pedidoProduto.getProduto() != null ? pedidoProduto.getProduto().getId() : null;
         this.quantidade = pedidoProduto.getQuantidade();
         this.precoUnitario = pedidoProduto.getPrecoUnitario();
+        this.desconto = pedidoProduto.getDesconto() != null ? pedidoProduto.getDesconto() : BigDecimal.ZERO;
         this.subtotal = pedidoProduto.getSubtotal();
     }
 
@@ -45,8 +48,19 @@ public class PedidoProdutoDTO {
         pedidoProduto.setId(this.id);
         pedidoProduto.setQuantidade(this.quantidade);
         pedidoProduto.setPrecoUnitario(this.precoUnitario);
-        pedidoProduto.setSubtotal(this.subtotal);
-        // Note: produto e pedido devem ser setados no service
+        pedidoProduto.setDesconto(this.desconto != null ? this.desconto : BigDecimal.ZERO);
         return pedidoProduto;
+    }
+
+    public void calcularSubtotal() {
+        if (quantidade != null && precoUnitario != null) {
+            BigDecimal valorBruto = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+            BigDecimal valorDesconto = desconto != null ? desconto : BigDecimal.ZERO;
+            this.subtotal = valorBruto.subtract(valorDesconto);
+            
+            if (this.subtotal.compareTo(BigDecimal.ZERO) < 0) {
+                this.subtotal = BigDecimal.ZERO;
+            }
+        }
     }
 }

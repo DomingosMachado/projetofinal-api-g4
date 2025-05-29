@@ -1,5 +1,6 @@
 package org.serratec.projetofinal_api_g4.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,8 @@ public class PedidoProdutoService {
 
     @Transactional
     public PedidoProdutoDTO inserir(PedidoProdutoDTO dto, Long pedidoId) {
+        validarDados(dto);
+        
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Pedido não encontrado com id: " + pedidoId));
@@ -44,20 +47,20 @@ public class PedidoProdutoService {
         pedidoProduto.setProduto(produto);
         pedidoProduto.setQuantidade(dto.getQuantidade());
         pedidoProduto.setPrecoUnitario(dto.getPrecoUnitario());
-        pedidoProduto.setSubtotal(dto.getSubtotal());
+        pedidoProduto.setDesconto(dto.getDesconto());
+        pedidoProduto.calcularSubtotal();
 
         pedidoProduto = pedidoProdutoRepository.save(pedidoProduto);
         
-        return new PedidoProdutoDTO(
-                pedidoProduto.getId(),
-                pedidoProduto.getProduto().getId(),
-                pedidoProduto.getQuantidade(),
-                pedidoProduto.getPrecoUnitario(),
-                pedidoProduto.getSubtotal());
+        recalcularValorTotalPedido(pedidoId);
+        
+        return new PedidoProdutoDTO(pedidoProduto);
     }
 
     @Transactional
     public PedidoProdutoDTO atualizar(Long id, PedidoProdutoDTO dto) {
+        validarDados(dto);
+        
         PedidoProduto pedidoProduto = pedidoProdutoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "PedidoProduto não encontrado com id: " + id));
@@ -69,16 +72,14 @@ public class PedidoProdutoService {
         pedidoProduto.setProduto(produto);
         pedidoProduto.setQuantidade(dto.getQuantidade());
         pedidoProduto.setPrecoUnitario(dto.getPrecoUnitario());
-        pedidoProduto.setSubtotal(dto.getSubtotal());
+        pedidoProduto.setDesconto(dto.getDesconto());
+        pedidoProduto.calcularSubtotal();
 
         pedidoProduto = pedidoProdutoRepository.save(pedidoProduto);
 
-        return new PedidoProdutoDTO(
-                pedidoProduto.getId(),
-                pedidoProduto.getProduto().getId(),
-                pedidoProduto.getQuantidade(),
-                pedidoProduto.getPrecoUnitario(),
-                pedidoProduto.getSubtotal());
+        recalcularValorTotalPedido(pedidoProduto.getPedido().getId());
+
+        return new PedidoProdutoDTO(pedidoProduto);
     }
 
     @Transactional
@@ -87,42 +88,58 @@ public class PedidoProdutoService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "PedidoProduto não encontrado com id: " + id));
 
-        return new PedidoProdutoDTO(
-                pedidoProduto.getId(),
-                pedidoProduto.getProduto().getId(),
-                pedidoProduto.getQuantidade(),
-                pedidoProduto.getPrecoUnitario(),
-                pedidoProduto.getSubtotal());
+        return new PedidoProdutoDTO(pedidoProduto);
     }
 
     @Transactional
     public List<PedidoProdutoDTO> listarTodos() {
         List<PedidoProduto> lista = pedidoProdutoRepository.findAll();
         return lista.stream()
-                .map(pp -> new PedidoProdutoDTO(
-                        pp.getId(),
-                        pp.getProduto().getId(),
-                        pp.getQuantidade(),
-                        pp.getPrecoUnitario(),
-                        pp.getSubtotal()))
+                .map(pp -> new PedidoProdutoDTO(pp))
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public void deletar(Long id) {
-        if (!pedidoProdutoRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "PedidoProduto não encontrado com id: " + id);
-        }
+        PedidoProduto pedidoProduto = pedidoProdutoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "PedidoProduto não encontrado com id: " + id));
+        
+        Long pedidoId = pedidoProduto.getPedido().getId();
         pedidoProdutoRepository.deleteById(id);
+        
+        recalcularValorTotalPedido(pedidoId);
     }
 
-//     @Transactional
-//     public void deletarPorPedido(Long pedidoId) {
-//         // Verifica se o pedido existe
-//         if (!pedidoRepository.existsById(pedidoId)) {
-//             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado com id: " + pedidoId);
-//         }
+    private void validarDados(PedidoProdutoDTO dto) {
+        if (dto.getQuantidade() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Quantidade deve ser maior que zero");
+        }
         
-//         pedidoProdutoRepository.deleteByPedidoId(pedidoId);
-//     }
+        if (dto.getPrecoUnitario().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Preço unitário deve ser maior que zero");
+        }
+        
+        if (dto.getDesconto() != null && dto.getDesconto().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    "Desconto não pode ser negativo");
+        }
+    }
+
+    private void recalcularValorTotalPedido(Long pedidoId) {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Pedido não encontrado"));
+        
+        List<PedidoProduto> itens = pedidoProdutoRepository.findByPedidoId(pedidoId);
+        
+        BigDecimal valorTotal = itens.stream()
+                .map(PedidoProduto::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        pedido.setValorTotal(valorTotal);
+        pedidoRepository.save(pedido);
+    }
 }

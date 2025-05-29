@@ -47,6 +47,16 @@ public class Produto {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
 
+    @Positive(message = "O preço atual do produto deve ser positivo")
+    @NotNull(message = "O preço atual do produto é obrigatório")
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal precoAtual;
+
+    @Positive(message = "O estoque do produto deve ser positivo")
+    @NotNull(message = "O estoque do produto é obrigatório")
+    @Column(nullable = false)
+    private Integer estoque;
+
     @Positive(message = "A quantidade do produto deve ser positiva")
     @NotNull(message = "A quantidade do produto é obrigatória")
     @Column(nullable = false)

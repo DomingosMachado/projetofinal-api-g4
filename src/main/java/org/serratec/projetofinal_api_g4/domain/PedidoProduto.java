@@ -1,6 +1,7 @@
 package org.serratec.projetofinal_api_g4.domain;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
@@ -47,14 +49,38 @@ public class PedidoProduto {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precoUnitario;
 
-    @NotNull(message = "O subtotal é obrigatório")
-    @Positive(message = "O subtotal deve ser positivo")
-    @Column(nullable = false, precision = 10, scale = 2)
+    @DecimalMin(value = "0.0", message = "O desconto não pode ser negativo")
+    @Column(precision = 10, scale = 2)
+    private BigDecimal desconto = BigDecimal.ZERO;
+
+    @Column(precision = 10, scale = 2)
     private BigDecimal subtotal;
 
     public void calcularSubtotal() {
         if (quantidade != null && precoUnitario != null) {
-            this.subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+            BigDecimal valorBruto = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+            BigDecimal valorDesconto = desconto != null ? desconto : BigDecimal.ZERO;
+            this.subtotal = valorBruto.subtract(valorDesconto);
+            
+            if (this.subtotal.compareTo(BigDecimal.ZERO) < 0) {
+                this.subtotal = BigDecimal.ZERO;
+            }
         }
+    }
+
+    public BigDecimal getValorBruto() {
+        if (quantidade != null && precoUnitario != null) {
+            return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+        }
+        return BigDecimal.ZERO;
+    }
+
+    public BigDecimal getPercentualDesconto() {
+        BigDecimal valorBruto = getValorBruto();
+        if (valorBruto.compareTo(BigDecimal.ZERO) > 0 && desconto != null) {
+            return desconto.divide(valorBruto, 4, RoundingMode.HALF_UP)
+                          .multiply(BigDecimal.valueOf(100));
+        }
+        return BigDecimal.ZERO;
     }
 }
