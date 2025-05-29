@@ -1,8 +1,5 @@
 package org.serratec.projetofinal_api_g4.service;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.serratec.projetofinal_api_g4.domain.Endereco;
 
 import org.serratec.projetofinal_api_g4.dto.EnderecoDTO;

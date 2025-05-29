@@ -36,7 +36,7 @@ public class Endereco {
     }
 
 	public void setCidade(String localidade) {
-		/
+		
 		throw new UnsupportedOperationException("Unimplemented method 'setCidade'");
 	}
 
