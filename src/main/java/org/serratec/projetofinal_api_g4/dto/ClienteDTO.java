@@ -36,6 +36,10 @@ public class ClienteDTO {
     @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "CPF deve estar no formato XXX.XXX.XXX-XX")
     private String cpf;
 
+    @Size(min = 6, message = "A senha deve ter pelo menos 6 caracteres")
+    @NotBlank(message = "A senha é obrigatória")
+    private String senha;
+
     @Valid
     private EnderecoDTO endereco;
 
@@ -45,6 +49,7 @@ public class ClienteDTO {
         this.email = cliente.getEmail();
         this.telefone = cliente.getTelefone();
         this.cpf = cliente.getCpf();
+        this.senha = null;
         this.endereco = cliente.getEndereco() != null ? new EnderecoDTO(cliente.getEndereco()) : null;
     }
 
@@ -55,6 +60,7 @@ public class ClienteDTO {
         cliente.setEmail(this.email);
         cliente.setTelefone(this.telefone);
         cliente.setCpf(this.cpf);
+        cliente.setSenha(this.senha);
         cliente.setEndereco(this.endereco != null ? this.endereco.toEntity() : null);
         return cliente;
     }

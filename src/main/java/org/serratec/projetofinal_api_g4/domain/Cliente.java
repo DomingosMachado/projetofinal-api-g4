@@ -52,6 +52,7 @@ public class Cliente {
     @Column(unique = true, nullable = false, length = 14)
     private String cpf;
 
+    private String senha;
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pedido> pedidos;
     
