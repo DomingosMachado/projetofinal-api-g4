@@ -1,17 +1,22 @@
 package org.serratec.projetofinal_api_g4.domain;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -24,6 +29,8 @@ public class Produto {
     private Long Id;
 
     @NotBlank(message = "O nome do produto é obrigatório")
+    @Size(min = 2, max = 200, message = "O nome do produto deve ter entre 2 e 200 caracteres")
+    @Column(nullable = false, length = 200)
     private String nome;
 
     private String descricao;
@@ -40,6 +47,9 @@ public class Produto {
     @JoinColumn(name = "categoria_id", nullable = false)
     @NotNull(message = "A categoria do produto é obrigatória")
     private Categoria categoria;
+
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL)
+    private List<PedidoProduto> pedidoProdutos;
     
 
 }

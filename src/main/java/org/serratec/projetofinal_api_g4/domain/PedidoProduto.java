@@ -38,6 +38,6 @@ public class PedidoProduto {
 
     @Positive(message = "O preço deve ser positivo")
     @NotNull(message = "O preço é obrigatório")
-    private BigDecimal preco;
+    private BigDecimal valorVenda;
 
 }
