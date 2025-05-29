@@ -32,7 +32,7 @@ public class PedidoService {
                     pedido.setDataPedido(pedidoAtualizado.getDataPedido());
                     pedido.setStatus(pedidoAtualizado.getStatus());
                     pedido.setCliente(pedidoAtualizado.getCliente());
-                    pedido.setItens(pedidoAtualizado.getItens());
+                    pedido.setProdutos(pedidoAtualizado.getProdutos());
                     return pedidoRepository.save(pedido);
                 })
                 .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
