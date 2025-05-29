@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.lang.NonNull;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,8 +27,11 @@ public class ControllerExceptionHandler  extends ResponseEntityExceptionHandler 
 
   //Este e para erros de validação, como campos obrigatórios, inválidos, E-mail com formato inválido, Nome com mais de 50 caracteres, etc.
   @Override
-	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(
+        @NonNull MethodArgumentNotValidException ex,
+        @NonNull HttpHeaders headers,
+        @NonNull HttpStatusCode status,
+        @NonNull WebRequest request) {
         //cria uma lista de erros
 		List<String>erros= new ArrayList<>();
     // percorre os erros de validação e adiciona na lista de erros
@@ -39,8 +43,11 @@ public class ControllerExceptionHandler  extends ResponseEntityExceptionHandler 
 	
   //Este trata erros de enumeração inválida, como um JSON mal formatado ou um valor de enumeração que não existe.
 	@Override
-	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
-		HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+	protected ResponseEntity<Object> handleHttpMessageNotReadable(
+        @NonNull HttpMessageNotReadableException ex,
+        @NonNull HttpHeaders headers,
+        @NonNull HttpStatusCode status,
+        @NonNull WebRequest request) {
 		
     //Adiciona uma mensagem de erro específica para enumerações inválidas
 		List<String> erros =  new ArrayList<>();
