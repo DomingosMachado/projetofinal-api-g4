@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import org.serratec.projetofinal_api_g4.domain.Cliente;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+// import org.springframework.data.jpa.repository.Query;
+// import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
