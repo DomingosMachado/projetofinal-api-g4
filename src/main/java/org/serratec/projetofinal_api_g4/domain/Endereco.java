@@ -1,44 +1,31 @@
 package org.serratec.projetofinal_api_g4.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Embeddable
 public class Endereco {
 
-    @Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id_endereco")
-	private Long id;
+    private String cep;
+    private String logradouro;
+    private String complemento;
+    private String bairro;
+    private String numero;
+    private String uf;
+    private String cidade; 
+    private Long ibge;
 
-	private String cep;
-
-	private String logradouro;
-
-	private String complemento;
-
-	private String bairro;
-
-	private String numero;
-
-	private String uf;
-
-	private Long ibge;
-
+    
     public String getCidade() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getCidade'");
+        return cidade;
     }
 
-	public void setCidade(String localidade) {
-		/
-		throw new UnsupportedOperationException("Unimplemented method 'setCidade'");
-	}
-
-	
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
+    }
 }

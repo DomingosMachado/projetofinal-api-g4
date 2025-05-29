@@ -20,7 +20,7 @@ public class PedidoProduto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "pedido_id", nullable = false)
@@ -32,12 +32,15 @@ public class PedidoProduto {
     @NotNull(message = "O produto é obrigatório")
     private Produto produto;
 
-    @Positive(message = "A quantidade deve ser positiva")
     @NotNull(message = "A quantidade é obrigatória")
+    @Positive(message = "A quantidade deve ser positiva")
     private Integer quantidade;
 
-    @Positive(message = "O preço deve ser positivo")
-    @NotNull(message = "O preço é obrigatório")
-    private BigDecimal valorVenda;
+    @NotNull(message = "O preço unitário é obrigatório")
+    @Positive(message = "O preço unitário deve ser positivo")
+    private BigDecimal precoUnitario;
 
+    @NotNull(message = "O subtotal é obrigatório")
+    @Positive(message = "O subtotal deve ser positivo")
+    private BigDecimal subtotal;
 }
