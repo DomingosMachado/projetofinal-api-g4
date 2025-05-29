@@ -1,5 +1,7 @@
 package org.serratec.projetofinal_api_g4.domain;
 
+import java.util.Optional;
+
 import org.hibernate.validator.constraints.br.CPF;
 
 import jakarta.persistence.Column;
@@ -43,5 +45,9 @@ public class Cliente {
 
     @Embedded
     private Endereco endereco;
+
+    public Optional<Cliente> getPedidos() {
+        return null; // MEUS DEUS TEM QUE MUDAR ISSO!!!
+    }
 
 }
