@@ -18,6 +18,12 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     
     boolean existsByCpf(String cpf);
     
+    // Buscar cliente por CEP
+    Optional<Cliente> findByEnderecoCep(String cep);
+    
+    // Verificar se existe cliente com CEP
+    boolean existsByEnderecoCep(String cep);
+    
     // Buscar cliente por email
     Optional<Cliente> findByEmail(String email);
     
