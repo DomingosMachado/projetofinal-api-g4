@@ -11,6 +11,8 @@ private String cep;
 	private String complemento;
 	private String bairro;
 	private String uf;
+	private String numero;
+	private String cidade;
 	private Long ibge;
 
 	public EnderecoDTO(Endereco endereco) {
@@ -19,9 +21,19 @@ private String cep;
 		this.complemento = endereco.getComplemento();
 		this.bairro = endereco.getBairro();
 		this.uf = endereco.getUf();
+		this.numero = endereco.getNumero();
+		this.cidade = endereco.getCidade();		
 		this.ibge = endereco.getIbge();
 	}
 
+
+
+	public String getCidade() {
+		return cidade;
+	}
+	public void setCidade(String cidade) {
+		this.cidade = cidade;
+	}
 	public String getCep() {
 		return cep;
 	}
@@ -68,6 +80,16 @@ private String cep;
 
 	public void setIbge(Long ibge) {
 		this.ibge = ibge;
+	}
+
+
+	public String getNumero() {
+		return numero;
+	}
+
+
+	public void setNumero(String numero) {
+		this.numero = numero;
 	}
 
 }

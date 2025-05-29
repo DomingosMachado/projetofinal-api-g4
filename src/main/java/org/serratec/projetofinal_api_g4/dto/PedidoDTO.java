@@ -11,13 +11,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-<<<<<<< HEAD
 @NoArgsConstructor 
 @AllArgsConstructor 
-=======
-@AllArgsConstructor
-@NoArgsConstructor
->>>>>>> origin/Teste
+
 public class PedidoDTO {
 
   private Long clienteId;

@@ -24,8 +24,21 @@ public class Endereco {
 
 	private String bairro;
 
+	private String numero;
+
 	private String uf;
 
 	private Long ibge;
 
+    public String getCidade() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCidade'");
+    }
+
+	public void setCidade(String localidade) {
+		/
+		throw new UnsupportedOperationException("Unimplemented method 'setCidade'");
+	}
+
+	
 }

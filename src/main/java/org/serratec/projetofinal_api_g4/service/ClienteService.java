@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 package org.serratec.projetofinal_api_g4.service;
 
 import java.util.List;
@@ -115,4 +113,3 @@ public class ClienteService {
 
 
 }
->>>>>>> origin/Teste

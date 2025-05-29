@@ -1,10 +1,7 @@
 package org.serratec.projetofinal_api_g4.domain;
 
-<<<<<<< HEAD
 import java.util.List;
-=======
 import java.util.Optional;
->>>>>>> origin/Teste
 
 import org.hibernate.validator.constraints.br.CPF;
 
