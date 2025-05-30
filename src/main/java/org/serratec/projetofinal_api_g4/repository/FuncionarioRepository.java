@@ -11,5 +11,4 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Long> 
 
     boolean existsByEmail(String email);
 
-
 }

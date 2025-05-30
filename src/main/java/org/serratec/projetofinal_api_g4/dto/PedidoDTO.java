@@ -11,7 +11,6 @@ import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,14 +29,9 @@ public class PedidoDTO {
     @NotEmpty(message = "O pedido deve conter pelo menos um produto")
     private List<PedidoProdutoDTO> produtos;
 
-    @NotNull(message = "O valor total do pedido é obrigatório")
-    @Positive(message = "O valor total do pedido deve ser positivo")
+    // Campos preenchidos automaticamente pelo controller
     private BigDecimal valorTotal;
-
-    @NotNull(message = "A data do pedido é obrigatória")
     private LocalDateTime dataPedido;
-
-    @NotNull(message = "O status do pedido é obrigatório")
     private PedidoStatus status;
 
     public PedidoDTO(Pedido pedido) {

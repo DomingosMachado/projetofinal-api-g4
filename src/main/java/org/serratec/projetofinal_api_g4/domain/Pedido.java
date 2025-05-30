@@ -21,7 +21,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -44,17 +43,13 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PedidoProduto> produtos = new ArrayList<>();
 
-    @NotNull(message = "O valor total do pedido é obrigatório")
-    @Positive(message = "O valor total do pedido deve ser positivo")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valorTotal;
 
-    @NotNull(message = "A data do pedido é obrigatória")
     @Column(nullable = false)
     private LocalDateTime dataPedido;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "O status do pedido é obrigatório")
     @Column(nullable = false, length = 20)
     private PedidoStatus status;
 
