@@ -105,7 +105,7 @@ public class ClienteService {
         endereco.setUf(enderecoViaCep.getUf());
         endereco.setIbge(enderecoViaCep.getIbge() != null ? Long.parseLong(enderecoViaCep.getIbge()) : null);
 
-        // Atualizar cliente
+        // Atualizar informações do cliente
         cliente.setNome(clienteDTO.getNome());
         cliente.setEmail(clienteDTO.getEmail());
         cliente.setTelefone(clienteDTO.getTelefone());
