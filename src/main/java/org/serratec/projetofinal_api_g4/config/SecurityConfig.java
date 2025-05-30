@@ -37,11 +37,20 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html", "/swagger-resources/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().authenticated() // Alteração para permitir acesso apenas aos endpoints permitidos
-            )
+        .requestMatchers(
+            "/api-docs/**",              
+            "/v3/api-docs/**",           
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-ui/index.html",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/configuration/**",
+            "/h2-console/**",
+            "/api/auth/**"
+        ).permitAll()
+        .anyRequest().authenticated()
+    )
             .headers(headers -> headers
                 .frameOptions(frameOptions -> frameOptions.disable())
             );
