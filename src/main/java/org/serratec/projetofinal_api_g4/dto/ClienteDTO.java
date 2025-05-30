@@ -33,7 +33,6 @@ public class ClienteDTO {
 
     @CPF(message = "CPF deve ser válido")
     @NotBlank(message = "O CPF do cliente é obrigatório")
-    @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "CPF deve estar no formato XXX.XXX.XXX-XX")
     private String cpf;
 
     @Size(min = 6, message = "A senha deve ter pelo menos 6 caracteres")

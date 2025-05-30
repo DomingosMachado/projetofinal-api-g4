@@ -34,7 +34,9 @@ public class ProdutoService {
         produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
         produto.setPreco(dto.getPreco());
+        produto.setPrecoAtual(dto.getPreco()); // Usar o mesmo valor do preço
         produto.setQuantidade(dto.getQuantidade());
+        produto.setEstoque(dto.getQuantidade()); // Usar o mesmo valor da quantidade
         produto.setCategoria(categoria);
 
         produto = produtoRepository.save(produto);
@@ -54,7 +56,9 @@ public class ProdutoService {
         produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
         produto.setPreco(dto.getPreco());
+        produto.setPrecoAtual(dto.getPreco()); // Atualizar o preço atual também
         produto.setQuantidade(dto.getQuantidade());
+        produto.setEstoque(dto.getQuantidade()); // Atualizar o estoque também
         produto.setCategoria(categoria);
 
         produto = produtoRepository.save(produto);

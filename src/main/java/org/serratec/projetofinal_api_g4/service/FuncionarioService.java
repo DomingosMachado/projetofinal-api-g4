@@ -1,4 +1,5 @@
 package org.serratec.projetofinal_api_g4.service;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,14 +11,19 @@ import org.serratec.projetofinal_api_g4.repository.FuncionarioRepository;
 import org.serratec.projetofinal_api_g4.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.transaction.Transactional;
 
 @Service
-public class FuncionarioService {
+public class FuncionarioService implements UserDetailsService {
 
     @Autowired  
     private FuncionarioRepository funcionarioRepository;
@@ -26,7 +32,10 @@ public class FuncionarioService {
     private ProdutoRepository produtoRepository;
 
     @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private EmailService emailService;
 
     public FuncionarioService() {
         // Default constructor
@@ -41,10 +50,14 @@ public class FuncionarioService {
         Funcionario funcionario = new Funcionario();
         funcionario.setNome(dto.getNome());
         funcionario.setEmail(dto.getEmail());
-        funcionario.setSenha(bCryptPasswordEncoder.encode(dto.getSenha())); // Criptografar senha
+        funcionario.setSenha(passwordEncoder.encode(dto.getSenha())); // Criptografar senha
         funcionario.setTipoFuncionario(dto.getTipoFuncionario());
 
         funcionario = funcionarioRepository.save(funcionario);
+        
+        // Enviar email de confirmação
+        emailService.enviarEmailConfirmacao(funcionario.getEmail(), funcionario.getNome());
+        
         dto.setId(funcionario.getId());
         dto.setSenha(null); // Não retornar a senha
         return dto;
@@ -58,11 +71,15 @@ public class FuncionarioService {
         funcionario.setNome(dto.getNome());
         funcionario.setEmail(dto.getEmail());
         if (dto.getSenha() != null && !dto.getSenha().isEmpty()) {
-            funcionario.setSenha(bCryptPasswordEncoder.encode(dto.getSenha())); // Atualiza senha se fornecida
+            funcionario.setSenha(passwordEncoder.encode(dto.getSenha())); // Atualiza senha se fornecida
         }
         funcionario.setTipoFuncionario(dto.getTipoFuncionario());
 
         funcionario = funcionarioRepository.save(funcionario);
+        
+        // Enviar email de atualização
+        emailService.enviarEmailAtualizacao(funcionario.getEmail(), funcionario.getNome());
+        
         dto.setSenha(null); // Não retornar a senha
         return dto;
     }
@@ -92,7 +109,6 @@ public class FuncionarioService {
     }
 
     public Funcionario salvarFuncionario(Funcionario funcionario) {
-        
         return funcionarioRepository.save(funcionario);
     }
 
@@ -107,5 +123,21 @@ public class FuncionarioService {
         }
 
         return produtoRepository.save(produto);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) {
+        Funcionario funcionario = funcionarioRepository.findByEmail(email)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
+            
+        List<GrantedAuthority> authorities = List.of(
+            new SimpleGrantedAuthority("ROLE_" + funcionario.getTipoFuncionario().name())
+        );
+
+        return new User(
+            funcionario.getEmail(),
+            funcionario.getSenha(),
+            authorities
+        );
     }
 }
