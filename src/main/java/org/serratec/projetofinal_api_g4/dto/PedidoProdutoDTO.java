@@ -25,8 +25,6 @@ public class PedidoProdutoDTO {
     @Positive(message = "A quantidade deve ser positiva")
     private Integer quantidade;
     
-    @NotNull(message = "O preço unitário é obrigatório")
-    @Positive(message = "O preço unitário deve ser positivo")
     private BigDecimal precoUnitario;
     
     @DecimalMin(value = "0.0", message = "O desconto não pode ser negativo")
@@ -47,7 +45,12 @@ public class PedidoProdutoDTO {
         PedidoProduto pedidoProduto = new PedidoProduto();
         pedidoProduto.setId(this.id);
         pedidoProduto.setQuantidade(this.quantidade);
-        pedidoProduto.setPrecoUnitario(this.precoUnitario);
+        
+
+        if (this.precoUnitario != null) {
+            pedidoProduto.setPrecoUnitario(this.precoUnitario);
+        }
+        
         pedidoProduto.setDesconto(this.desconto != null ? this.desconto : BigDecimal.ZERO);
         return pedidoProduto;
     }

@@ -44,8 +44,6 @@ public class PedidoProduto {
     @Column(nullable = false)
     private Integer quantidade;
 
-    @NotNull(message = "O preço unitário é obrigatório")
-    @Positive(message = "O preço unitário deve ser positivo")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precoUnitario;
 

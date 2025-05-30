@@ -42,35 +42,35 @@ public class ClienteService {
     public ClienteDTO inserir(ClienteDTO clienteDTO) {
         validarCpfUnico(clienteDTO.getCpf());
 
-        // Buscar dados do endereço via CEP
+        String cpfFormatado = formatarCPF(clienteDTO.getCpf());
+        
+        String telefoneFormatado = formatarTelefone(clienteDTO.getTelefone());
+        
         ViaCepDTO enderecoViaCep = viaCepService.getAddressByCep(clienteDTO.getEndereco().getCep());
 
-        // Criar endereço com dados da API + número informado pelo usuário
         Endereco endereco = new Endereco();
         endereco.setLogradouro(enderecoViaCep.getLogradouro());
         endereco.setNumero(clienteDTO.getEndereco().getNumero());
         endereco.setComplemento(clienteDTO.getEndereco().getComplemento());
         endereco.setBairro(enderecoViaCep.getBairro());
         endereco.setCidade(enderecoViaCep.getLocalidade()); // localidade -> cidade
-        endereco.setCep(enderecoViaCep.getCep());
-        endereco.setUf(enderecoViaCep.getUf());
+        endereco.setCep(enderecoViaCep.getCep()); // Já formatado pelo ViaCepService
+        endereco.setUf(enderecoViaCep.getUf().toUpperCase()); // Garantir que a UF esteja em maiúsculas
         endereco.setIbge(enderecoViaCep.getIbge() != null ? Long.parseLong(enderecoViaCep.getIbge()) : null);
 
-        // Criar cliente
         Cliente cliente = new Cliente();
         cliente.setNome(clienteDTO.getNome());
         cliente.setEmail(clienteDTO.getEmail());
-        cliente.setTelefone(clienteDTO.getTelefone());
-        cliente.setCpf(clienteDTO.getCpf());
+        cliente.setTelefone(telefoneFormatado);
+        cliente.setCpf(cpfFormatado);
+        cliente.setSenha(clienteDTO.getSenha());
         cliente.setEndereco(endereco);
 
         cliente = clienteRepository.save(cliente);
         
-        // Enviar email de confirmação
         try {
             emailService.enviarEmailConfirmacao(cliente.getEmail(), cliente.getNome());
         } catch (Exception e) {
-            // Log do erro, mas não falhar a operação
             System.err.println("Erro ao enviar email de confirmação: " + e.getMessage());
         }
 
@@ -82,15 +82,16 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new ClienteNotFoundException("Cliente não encontrado. Id: " + id));
 
-        // Validar CPF apenas se foi alterado
-        if (!cliente.getCpf().equals(clienteDTO.getCpf())) {
-            validarCpfUnico(clienteDTO.getCpf());
+        String cpfFormatado = formatarCPF(clienteDTO.getCpf());
+        
+        String telefoneFormatado = formatarTelefone(clienteDTO.getTelefone());
+        
+        if (!cliente.getCpf().equals(cpfFormatado)) {
+            validarCpfUnico(cpfFormatado);
         }
 
-        // Buscar dados do endereço via CEP
         ViaCepDTO enderecoViaCep = viaCepService.getAddressByCep(clienteDTO.getEndereco().getCep());
 
-        // Atualizar endereço
         Endereco endereco = cliente.getEndereco();
         if (endereco == null) {
             endereco = new Endereco();
@@ -101,24 +102,24 @@ public class ClienteService {
         endereco.setComplemento(clienteDTO.getEndereco().getComplemento());
         endereco.setBairro(enderecoViaCep.getBairro());
         endereco.setCidade(enderecoViaCep.getLocalidade());
-        endereco.setCep(enderecoViaCep.getCep());
-        endereco.setUf(enderecoViaCep.getUf());
+        endereco.setCep(enderecoViaCep.getCep()); // Já formatado pelo ViaCepService
+        endereco.setUf(enderecoViaCep.getUf().toUpperCase()); // Garantir que a UF esteja em maiúsculas
         endereco.setIbge(enderecoViaCep.getIbge() != null ? Long.parseLong(enderecoViaCep.getIbge()) : null);
 
-        // Atualizar cliente
         cliente.setNome(clienteDTO.getNome());
         cliente.setEmail(clienteDTO.getEmail());
-        cliente.setTelefone(clienteDTO.getTelefone());
-        cliente.setCpf(clienteDTO.getCpf());
+        cliente.setTelefone(telefoneFormatado);
+        cliente.setCpf(cpfFormatado);
+        if (clienteDTO.getSenha() != null && !clienteDTO.getSenha().isEmpty()) {
+            cliente.setSenha(clienteDTO.getSenha());
+        }
         cliente.setEndereco(endereco);
 
         cliente = clienteRepository.save(cliente);
         
-        // Enviar email de atualização
         try {
             emailService.enviarEmailAtualizacao(cliente.getEmail(), cliente.getNome());
         } catch (Exception e) {
-            // Log do erro, mas não falhar a operação
             System.err.println("Erro ao enviar email de atualização: " + e.getMessage());
         }
 
@@ -134,8 +135,43 @@ public class ClienteService {
     }
 
     private void validarCpfUnico(String cpf) {
-        if (clienteRepository.findByCpf(cpf).isPresent()) {
+        String cpfNumerico = cpf.replaceAll("\\D", "");
+        
+        if (clienteRepository.findByCpf(formatarCPF(cpfNumerico)).isPresent()) {
             throw new IllegalArgumentException("CPF já cadastrado");
+        }
+    }
+    
+
+    private String formatarCPF(String cpf) {
+        cpf = cpf.replaceAll("\\D", "");
+        
+        if (cpf.length() != 11) {
+            throw new IllegalArgumentException("CPF deve ter 11 dígitos");
+        }
+        
+        return cpf.substring(0, 3) + "." + 
+               cpf.substring(3, 6) + "." + 
+               cpf.substring(6, 9) + "-" + 
+               cpf.substring(9);
+    }
+    
+
+    private String formatarTelefone(String telefone) {
+        telefone = telefone.replaceAll("\\D", "");
+        
+        if (telefone.length() < 10 || telefone.length() > 11) {
+            throw new IllegalArgumentException("Telefone deve ter entre 10 e 11 dígitos");
+        }
+        
+        if (telefone.length() == 10) {
+            return "(" + telefone.substring(0, 2) + ") " + 
+                   telefone.substring(2, 6) + "-" + 
+                   telefone.substring(6);
+        } else {
+            return "(" + telefone.substring(0, 2) + ") " + 
+                   telefone.substring(2, 7) + "-" + 
+                   telefone.substring(7);
         }
     }
 }

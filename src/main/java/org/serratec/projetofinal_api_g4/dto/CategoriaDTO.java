@@ -1,7 +1,6 @@
 package org.serratec.projetofinal_api_g4.dto;
 
 import org.serratec.projetofinal_api_g4.domain.Categoria;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +12,6 @@ import lombok.NoArgsConstructor;
 public class CategoriaDTO {
     private Long id;
     
-    @NotBlank(message = "O nome da categoria é obrigatório")
     @Size(min = 2, max = 100, message = "O nome da categoria deve ter entre 2 e 100 caracteres")
     private String nome;
     
