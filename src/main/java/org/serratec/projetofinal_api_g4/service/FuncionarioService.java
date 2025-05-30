@@ -1,9 +1,6 @@
 package org.serratec.projetofinal_api_g4.service;
-
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.serratec.projetofinal_api_g4.controller.CategoriaController;
 import org.serratec.projetofinal_api_g4.domain.Funcionario;
 import org.serratec.projetofinal_api_g4.domain.Produto;
 import org.serratec.projetofinal_api_g4.dto.FuncionarioDTO;
@@ -21,8 +18,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class FuncionarioService {
 
-    private final CategoriaController categoriaController;
-
+    
     @Autowired  
     private FuncionarioRepository funcionarioRepository;
 
@@ -32,9 +28,6 @@ public class FuncionarioService {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    FuncionarioService(CategoriaController categoriaController) {
-        this.categoriaController = categoriaController;
-    }
 
      @Transactional
     public FuncionarioDTO inserir(FuncionarioDTO dto) {
