@@ -1,7 +1,6 @@
 package org.serratec.projetofinal_api_g4.service;
 
 import java.util.Collections;
-
 import org.serratec.projetofinal_api_g4.domain.Funcionario;
 import org.serratec.projetofinal_api_g4.repository.FuncionarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +13,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FuncionarioDetailsService implements UserDetailsService {
-    
+
     @Autowired
     private FuncionarioRepository funcionarioRepository;
-    
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Funcionario funcionario = funcionarioRepository.findByEmail(email)
@@ -26,7 +25,7 @@ public class FuncionarioDetailsService implements UserDetailsService {
         return new User(
                 funcionario.getEmail(),
                 funcionario.getSenha(),
-                Collections.singleton(new SimpleGrantedAuthority(funcionario.getTipoFuncionario().name()))
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_" + funcionario.getTipoFuncionario().name()))
         );
     }
 }

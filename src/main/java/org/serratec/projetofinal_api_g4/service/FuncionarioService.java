@@ -1,10 +1,6 @@
 package org.serratec.projetofinal_api_g4.service;
 import java.util.List;
 import java.util.stream.Collectors;
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/teste
 import org.serratec.projetofinal_api_g4.domain.Funcionario;
 import org.serratec.projetofinal_api_g4.domain.Produto;
 import org.serratec.projetofinal_api_g4.dto.FuncionarioDTO;
@@ -22,17 +18,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+
 import jakarta.transaction.Transactional;
 
 @Service
-<<<<<<< HEAD
-public class FuncionarioService {
-
-    
-=======
 public class FuncionarioService implements UserDetailsService {
 
->>>>>>> origin/teste
     @Autowired  
     private FuncionarioRepository funcionarioRepository;
 
@@ -45,12 +36,9 @@ public class FuncionarioService implements UserDetailsService {
     @Autowired
     private EmailService emailService;
 
-<<<<<<< HEAD
-=======
     public FuncionarioService() {
         // Default constructor
     }
->>>>>>> origin/teste
 
      @Transactional
     public FuncionarioDTO inserir(FuncionarioDTO dto) {
