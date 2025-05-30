@@ -37,13 +37,16 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/**").permitAll() // Allow all requests to all endpoints
+                .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html", "/swagger-resources/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .anyRequest().authenticated() // Alteração para permitir acesso apenas aos endpoints permitidos
             )
             .headers(headers -> headers
                 .frameOptions(frameOptions -> frameOptions.disable())
             );
             
-        // Add JWT token filter - commented out for now to allow unrestricted access
+        // Comentado para permitir acesso sem autenticação durante desenvolvimento
         // http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
