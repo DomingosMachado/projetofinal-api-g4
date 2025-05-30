@@ -10,24 +10,19 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityTempConfig {
 
-    @SuppressWarnings("removal")
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/api/**").permitAll() // Libera suas APIs
-                .requestMatchers("/swagger-ui/**").permitAll() // Libera Swagger
-                .requestMatchers("/api-docs/**").permitAll() // Libera API Docs
-                .anyRequest().authenticated()
-            )
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**")
-            )
-            .headers(headers -> headers
-                .frameOptions().disable() // Versão atualizada para permitir H2 Console
-            );
-        
-        return http.build();
-    }
+        @SuppressWarnings("removal")
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                .authorizeHttpRequests(authz -> authz
+                                                .requestMatchers(
+                                                                "/v3/api-docs/**",
+                                                                "/swagger-ui/**",
+                                                                "/swagger-ui.html")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
+                                .csrf(csrf -> csrf.disable());
+
+                return http.build();
+        }
 }
