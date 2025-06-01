@@ -1,8 +1,7 @@
 package org.serratec.projetofinal_api_g4.service;
 
-import java.util.Collections;
-import org.serratec.projetofinal_api_g4.domain.Funcionario;
-import org.serratec.projetofinal_api_g4.repository.FuncionarioRepository;
+import org.serratec.projetofinal_api_g4.domain.Cliente;
+import org.serratec.projetofinal_api_g4.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -11,24 +10,24 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+
 @Service
-public class FuncionarioDetailsService implements UserDetailsService {
+public class ClienteDetailsService implements UserDetailsService {
 
-    @Autowired
-        private FuncionarioRepository funcionarioRepository;
-
+        @Autowired
+        private ClienteRepository clienteRepository;
 @Override
 public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-    Funcionario funcionario = funcionarioRepository.findByEmail(email)
+    Cliente cliente = clienteRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("Email não encontrado: " + email));
 
-    // Codifica no username: id:nome:email
-    String usernameWithDetails = funcionario.getId() + ":" + funcionario.getNome() + ":" + funcionario.getEmail();
+    String usernameWithDetails = cliente.getId() + ":" + cliente.getNome() + ":" + cliente.getEmail();
 
     return new User(
             usernameWithDetails,
-            funcionario.getSenha(),
-            Collections.singleton(new SimpleGrantedAuthority("ROLE_" + funcionario.getTipoFuncionario().name()))
+            cliente.getSenha(),
+            Collections.singleton(new SimpleGrantedAuthority("ROLE_CLIENTE"))
     );
 }
 }

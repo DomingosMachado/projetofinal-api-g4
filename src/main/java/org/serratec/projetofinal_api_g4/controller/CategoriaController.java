@@ -1,20 +1,11 @@
 package org.serratec.projetofinal_api_g4.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import org.serratec.projetofinal_api_g4.dto.CategoriaDTO;
 import org.serratec.projetofinal_api_g4.service.CategoriaService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,8 +20,12 @@ import java.util.List;
 @Tag(name = "Categorias", description = "API de gerenciamento de categorias")
 public class CategoriaController {
 
-    @Autowired
-    private CategoriaService categoriaService;
+    private final CategoriaService categoriaService;
+
+    // Injeção por construtor (melhor prática)
+    public CategoriaController(CategoriaService categoriaService) {
+        this.categoriaService = categoriaService;
+    }
 
     @Operation(summary = "Criar nova categoria")
     @ApiResponses({
@@ -51,12 +46,8 @@ public class CategoriaController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<CategoriaDTO> atualizar(@PathVariable Long id, @Valid @RequestBody CategoriaDTO categoriaDTO) {
-        try {
-            CategoriaDTO categoriaAtualizada = categoriaService.atualizar(categoriaDTO, id);
-            return ResponseEntity.ok(categoriaAtualizada);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        CategoriaDTO categoriaAtualizada = categoriaService.atualizar(categoriaDTO, id);
+        return ResponseEntity.ok(categoriaAtualizada);
     }
 
     @Operation(summary = "Listar todas as categorias")
@@ -73,12 +64,8 @@ public class CategoriaController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<CategoriaDTO> buscarPorId(@PathVariable Long id) {
-        try {
-            CategoriaDTO categoria = categoriaService.buscarPorId(id);
-            return ResponseEntity.ok(categoria);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        CategoriaDTO categoria = categoriaService.buscarPorId(id);
+        return ResponseEntity.ok(categoria);
     }
 
     @Operation(summary = "Deletar categoria")
@@ -88,11 +75,7 @@ public class CategoriaController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        try {
-            categoriaService.deletar(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        categoriaService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 }

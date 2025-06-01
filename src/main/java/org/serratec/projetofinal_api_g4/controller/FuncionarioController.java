@@ -90,7 +90,16 @@ public class FuncionarioController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<FuncionarioDTO> buscarPorId(@PathVariable Long id) {
-        // TEM QUE FAZER A IMPLEMENTAÇÃO NO SERVICE
+        FuncionarioDTO funcionario = funcionarioService.buscarPorId(id);
+        if (funcionario != null) {
+            FuncionarioDTO funcionarioDTO = new FuncionarioDTO();
+            funcionarioDTO.setId(funcionario.getId());
+            funcionarioDTO.setNome(funcionario.getNome());
+            funcionarioDTO.setEmail(funcionario.getEmail());
+            funcionarioDTO.setTipoFuncionario(funcionario.getTipoFuncionario());
+            // Não retornar senha por questões de segurança
+            return ResponseEntity.ok(funcionarioDTO);
+        }
         return ResponseEntity.notFound().build();
     }
 
@@ -101,11 +110,26 @@ public class FuncionarioController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<FuncionarioDTO> atualizarFuncionario(
+    public ResponseEntity<FuncionarioDTO> atualizar(
             @PathVariable Long id, 
             @Valid @RequestBody FuncionarioDTO funcionarioDTO) {
-        // TEM QUE FAZER A IMPLEMENTAÇÃO NO SERVICE
-        return ResponseEntity.notFound().build();
+        try {
+            FuncionarioDTO funcionarioAtualizado = funcionarioService.atualizar(id, funcionarioDTO);
+            FuncionarioDTO funcionarioRetorno = new FuncionarioDTO();
+            funcionarioRetorno.setId(funcionarioAtualizado.getId());
+            funcionarioRetorno.setNome(funcionarioAtualizado.getNome());
+            funcionarioRetorno.setEmail(funcionarioAtualizado.getEmail());
+            funcionarioRetorno.setTipoFuncionario(funcionarioAtualizado.getTipoFuncionario());
+            // Não retornar senha por questões de segurança
+            return ResponseEntity.ok(funcionarioRetorno);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("não encontrado")) {
+                return ResponseEntity.notFound().build();
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+    
     }
 
     @Operation(summary = "Deletar funcionário")
@@ -114,15 +138,28 @@ public class FuncionarioController {
         @ApiResponse(responseCode = "404", description = "Funcionário não encontrado")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarFuncionario(@PathVariable Long id) {
-        // TEM QUE FAZER A IMPLEMENTAÇÃO NO SERVICE
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        try {
+            funcionarioService.deletar(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("não encontrado")) {
+                return ResponseEntity.notFound().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+       
     }
 
     @Operation(summary = "Listar todos os funcionários")
     @GetMapping
     public ResponseEntity<?> listarTodos() {
-        // TEM QUE FAZER A IMPLEMENTAÇÃO NO SERVICE
-        return ResponseEntity.notFound().build();
+        try {
+            return ResponseEntity.ok(funcionarioService.listarTodos());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao listar funcionários"); 
+
+}
     }
 }

@@ -1,7 +1,8 @@
 package org.serratec.projetofinal_api_g4.dto;
 
-import org.serratec.projetofinal_api_g4.domain.Cliente;
+
 import org.hibernate.validator.constraints.br.CPF;
+import org.serratec.projetofinal_api_g4.domain.Cliente;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor 
+@AllArgsConstructor
 public class ClienteDTO {
 
     private Long id;
@@ -36,8 +37,8 @@ public class ClienteDTO {
     @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}|\\d{11}", message = "CPF deve estar no formato XXX.XXX.XXX-XX ou apenas números")
     private String cpf;
 
-    @Size(min = 6, message = "A senha deve ter pelo menos 6 caracteres")
     @NotBlank(message = "A senha é obrigatória")
+    @Size(min = 6, message = "A senha deve ter pelo menos 6 caracteres")
     private String senha;
 
     @Valid
@@ -49,13 +50,13 @@ public class ClienteDTO {
         this.email = cliente.getEmail();
         this.telefone = cliente.getTelefone();
         this.cpf = cliente.getCpf();
-        this.senha = null;
-        this.endereco = cliente.getEndereco() != null ? new EnderecoDTO(cliente.getEndereco()) : null;
+        this.senha = null; // Evita trazer a senha no retorno
+        this.endereco = cliente.getEndereco() != null ? EnderecoDTO.fromEntity(cliente.getEndereco()) : null;
     }
 
-    public Cliente toEntity() {
+    // Método opcional: cria um Cliente "desanexado" para inserir
+    public Cliente toNewEntity() {
         Cliente cliente = new Cliente();
-        cliente.setId(this.id);
         cliente.setNome(this.nome);
         cliente.setEmail(this.email);
         cliente.setTelefone(this.telefone);
@@ -65,3 +66,4 @@ public class ClienteDTO {
         return cliente;
     }
 }
+

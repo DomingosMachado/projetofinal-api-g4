@@ -1,19 +1,22 @@
 package org.serratec.projetofinal_api_g4.service;
 
+
 import org.serratec.projetofinal_api_g4.domain.Pedido;
 import org.serratec.projetofinal_api_g4.domain.PedidoProduto;
 import org.serratec.projetofinal_api_g4.domain.Produto;
+import org.serratec.projetofinal_api_g4.dto.PedidoDTO;
+import org.serratec.projetofinal_api_g4.dto.PedidoProdutoDTO;
 import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
-import org.serratec.projetofinal_api_g4.exception.EstoqueInsuficienteException;
+import org.serratec.projetofinal_api_g4.repository.ClienteRepository;
 import org.serratec.projetofinal_api_g4.repository.PedidoRepository;
 import org.serratec.projetofinal_api_g4.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import jakarta.transaction.Transactional;
-
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,39 +33,42 @@ public class PedidoService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private ClienteRepository clienteRepository;
+
     public List<Pedido> listarTodos() {
+        Optional<List<Pedido>> pedidosOpt = Optional.ofNullable(pedidoRepository.findAll());
+        if (pedidosOpt.isEmpty() || pedidosOpt.get().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nenhum pedido encontrado");
+        }
         return pedidoRepository.findAll();
     }
 
     public Optional<Pedido> buscarPorId(Long id) {
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID do pedido não pode ser nulo");
+        }
         return pedidoRepository.findById(id);
     }
 
     @Transactional
     public Pedido salvar(Pedido pedido) {
-        // Verificar estoque para todos os produtos
         verificarEstoque(pedido);
         
-        // Se a data não foi fornecida, usa a data atual
         if (pedido.getDataPedido() == null) {
             pedido.setDataPedido(LocalDateTime.now());
         }
         
-        // Se o status não foi definido, assume como PENDENTE
         if (pedido.getStatus() == null) {
             pedido.setStatus(PedidoStatus.PENDENTE);
         }
         
-        // Recalcular o valor total do pedido
         recalcularValorTotal(pedido);
         
-        // Salvar o pedido
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
         
-        // Atualizar o estoque dos produtos
         atualizarEstoque(pedidoSalvo);
         
-        // Enviar email de confirmação
         try {
             String numeroPedido = String.valueOf(pedidoSalvo.getId());
             emailService.enviarEmailPedido(
@@ -78,12 +84,28 @@ public class PedidoService {
     }
 
     @Transactional
+    public void buscarPedidoCliente(Long id, String emailCliente){
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Pedido não encontrado"
+                ));
+
+        if (!pedido.getCliente().getEmail().equals(emailCliente)) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "Você não tem permissão para acessar este pedido"
+            );
+        }
+        
+    
+    }
+
+    
+    @Transactional
     public Pedido atualizar(Long id, Pedido pedidoAtualizado) {
         return pedidoRepository.findById(id)
                 .map(pedido -> {
                     PedidoStatus statusAntigo = pedido.getStatus();
                     
-                    // Verificar se o pedido pode ser atualizado
                     if (statusAntigo == PedidoStatus.CANCELADO || statusAntigo == PedidoStatus.ENTREGUE) {
                         throw new ResponseStatusException(
                             HttpStatus.BAD_REQUEST, 
@@ -91,12 +113,8 @@ public class PedidoService {
                         );
                     }
                     
-                    // Caso esteja alterando os produtos, verificar estoque
                     if (pedidoAtualizado.getProdutos() != null && !pedidoAtualizado.getProdutos().isEmpty()) {
-                        // Desfazer as alterações de estoque do pedido anterior
                         restaurarEstoque(pedido);
-                        
-                        // Verificar estoque para novos produtos
                         verificarEstoque(pedidoAtualizado);
                     }
                     
@@ -104,7 +122,6 @@ public class PedidoService {
                     pedido.setStatus(pedidoAtualizado.getStatus());
                     pedido.setCliente(pedidoAtualizado.getCliente());
                     
-                    // Limpar produtos anteriores e adicionar novos
                     pedido.getProdutos().clear();
                     if (pedidoAtualizado.getProdutos() != null) {
                         for (PedidoProduto pp : pedidoAtualizado.getProdutos()) {
@@ -112,17 +129,14 @@ public class PedidoService {
                         }
                     }
                     
-                    // Recalcular valor total
                     recalcularValorTotal(pedido);
                     
                     Pedido pedidoAtualizadoNoBanco = pedidoRepository.save(pedido);
                     
-                    // Atualizar estoque se não foi cancelado
                     if (pedidoAtualizadoNoBanco.getStatus() != PedidoStatus.CANCELADO) {
                         atualizarEstoque(pedidoAtualizadoNoBanco);
                     }
                     
-                    // Enviar email se mudou o status
                     if (!statusAntigo.equals(pedidoAtualizadoNoBanco.getStatus())) {
                         try {
                             String numeroPedido = String.valueOf(pedidoAtualizadoNoBanco.getId());
@@ -149,7 +163,6 @@ public class PedidoService {
         if (pedidoOpt.isPresent()) {
             Pedido pedido = pedidoOpt.get();
             
-            // Verificar se pode ser excluído
             if (pedido.getStatus() != PedidoStatus.PENDENTE) {
                 throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, 
@@ -157,11 +170,21 @@ public class PedidoService {
                 );
             }
             
-            // Restaurar estoque
             restaurarEstoque(pedido);
             
-            // Excluir pedido
             pedidoRepository.deleteById(id);
+            
+            // Enviar email notificando exclusão do pedido
+            try {
+                emailService.enviarEmailPedido(
+                    pedido.getCliente().getEmail(),
+                    pedido.getCliente().getNome(),
+                    String.valueOf(pedido.getId())
+                );
+            } catch (Exception e) {
+                System.err.println("Erro ao enviar email de exclusão do pedido: " + e.getMessage());
+            }
+            
         } else {
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Pedido não encontrado"
@@ -169,12 +192,9 @@ public class PedidoService {
         }
     }
     
-
     private void verificarEstoque(Pedido pedido) {
         for (PedidoProduto pp : pedido.getProdutos()) {
             Produto produto = pp.getProduto();
-            
-            java.math.BigDecimal precoUnitarioAtual = pp.getPrecoUnitario();
             
             Produto produtoAtualizado = produtoRepository.findById(produto.getId())
                 .orElseThrow(() -> new ResponseStatusException(
@@ -182,7 +202,8 @@ public class PedidoService {
                 ));
             
             if (produtoAtualizado.getEstoque() < pp.getQuantidade()) {
-                throw new EstoqueInsuficienteException(
+                throw new ResponseStatusException(
+                     HttpStatus.BAD_REQUEST,
                     "Estoque insuficiente para o produto " + produtoAtualizado.getNome() + 
                     ". Disponível: " + produtoAtualizado.getEstoque() + 
                     ", Solicitado: " + pp.getQuantidade()
@@ -191,19 +212,13 @@ public class PedidoService {
             
             pp.setProduto(produtoAtualizado);
             
-            if (precoUnitarioAtual != null) {
-                pp.setPrecoUnitario(precoUnitarioAtual);
-            } else if (pp.getPrecoUnitario() == null) {
+            if (pp.getPrecoUnitario() == null) {
                 pp.setPrecoUnitario(produtoAtualizado.getPrecoAtual());
             }
         }
     }
     
-    /**
-     * Atualiza o estoque dos produtos após confirmação do pedido
-     */
     private void atualizarEstoque(Pedido pedido) {
-        // Só atualiza estoque se o pedido não estiver cancelado
         if (pedido.getStatus() == PedidoStatus.CANCELADO) {
             return;
         }
@@ -211,19 +226,12 @@ public class PedidoService {
         for (PedidoProduto pp : pedido.getProdutos()) {
             Produto produto = pp.getProduto();
             
-            // Reduzir o estoque
             produto.setEstoque(produto.getEstoque() - pp.getQuantidade());
-            
-            // Salvar produto atualizado
             produtoRepository.save(produto);
         }
     }
     
-    /**
-     * Restaura o estoque em caso de cancelamento ou atualização
-     */
     private void restaurarEstoque(Pedido pedido) {
-        // Só restaura se o pedido não estava cancelado
         if (pedido.getStatus() == PedidoStatus.CANCELADO) {
             return;
         }
@@ -231,31 +239,21 @@ public class PedidoService {
         for (PedidoProduto pp : pedido.getProdutos()) {
             Produto produto = pp.getProduto();
             
-            // Buscar a versão mais atualizada do produto
             Produto produtoAtualizado = produtoRepository.findById(produto.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Produto não encontrado: " + produto.getId()
                 ));
             
-            // Restaurar o estoque
             produtoAtualizado.setEstoque(produtoAtualizado.getEstoque() + pp.getQuantidade());
-            
-            // Salvar produto atualizado
             produtoRepository.save(produtoAtualizado);
         }
     }
     
-    /**
-     * Recalcula o valor total do pedido com base nos produtos
-     */
     private void recalcularValorTotal(Pedido pedido) {
         java.math.BigDecimal valorTotal = java.math.BigDecimal.ZERO;
         
         for (PedidoProduto pp : pedido.getProdutos()) {
-            // Forçar cálculo do subtotal
             pp.calcularSubtotal();
-            
-            // Somar ao valor total
             if (pp.getSubtotal() != null) {
                 valorTotal = valorTotal.add(pp.getSubtotal());
             }
@@ -263,4 +261,28 @@ public class PedidoService {
         
         pedido.setValorTotal(valorTotal);
     }
+
+    public PedidoDTO inserir(PedidoDTO pedidoDTO) {
+      Pedido cliente = clienteRepository.findById(pedidoDTO.getCliente()).toEntityWithoutCliente();
+
+        Pedido pedido = new Pedido();
+        pedido.setCliente(cliente);
+        pedido.setDataPedido(LocalDateTime.now());
+        pedido.setStatus(PedidoStatus.PENDENTE);
+        pedido.setValorTotal(BigDecimal.ZERO);
+
+        if (pedidoDTO.getProdutos() == null || pedidoDTO.getProdutos().isEmpty()) {
+            throw new IllegalArgumentException("O pedido precisa conter pelo menos um produto.");
+        }
+
+        for (PedidoProdutoDTO ppDTO : pedidoDTO.getProdutos()) {
+            pedido.adicionarProduto(ppDTO.toEntity(pedido));
+        }
+
+        Pedido salvo = pedidoRepository.save(pedido);
+        return new PedidoDTO(salvo);
+    }
+
+  
 }
+    

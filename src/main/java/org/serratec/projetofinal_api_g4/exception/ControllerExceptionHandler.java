@@ -21,31 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // Tratamento para exceções de email e senha
-    @ExceptionHandler({EmailException.class, SenhaException.class})
-    protected ResponseEntity<Object> handleEmailESenhaException(RuntimeException ex) {
-        ErroResposta erroResposta = new ErroResposta(
-            HttpStatus.UNPROCESSABLE_ENTITY.value(),
-            ex.getMessage(),
-            LocalDateTime.now(),
-            List.of(ex.getMessage())
-        );
-        return ResponseEntity.unprocessableEntity().body(erroResposta);
-    }
-
-    // Tratamento para ClienteNotFoundException
-    @ExceptionHandler(ClienteNotFoundException.class)
-    protected ResponseEntity<Object> handleClienteNotFoundException(ClienteNotFoundException ex) {
-        ErroResposta erroResposta = new ErroResposta(
-            HttpStatus.NOT_FOUND.value(),
-            "Cliente não encontrado",
-            LocalDateTime.now(),
-            List.of(ex.getMessage())
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erroResposta);
-    }
-
-    // Tratamento para IllegalArgumentException (CPF/Email duplicado, validações customizadas)
+    // 1. Tratamento para IllegalArgumentException (ex: validações customizadas)
     @ExceptionHandler(IllegalArgumentException.class)
     protected ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
         ErroResposta erroResposta = new ErroResposta(
@@ -57,15 +33,13 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(erroResposta);
     }
 
-    // Tratamento para violação de integridade do banco (unique constraints)
+    // 2. Tratamento para violação de integridade do banco (ex: CPF ou Email duplicado)
     @ExceptionHandler(DataIntegrityViolationException.class)
     protected ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         String mensagem = "Erro de integridade dos dados";
         List<String> erros = new ArrayList<>();
-        
-        // Identificar o tipo de violação baseado na mensagem da exceção
         String exceptionMessage = ex.getMostSpecificCause().getMessage().toLowerCase();
-        
+
         if (exceptionMessage.contains("cpf") || exceptionMessage.contains("uk_cpf")) {
             mensagem = "CPF já cadastrado";
             erros.add("CPF já existe no sistema");
@@ -75,7 +49,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         } else {
             erros.add("Violação de constraint de integridade dos dados");
         }
-        
+
         ErroResposta erroResposta = new ErroResposta(
             HttpStatus.CONFLICT.value(),
             mensagem,
@@ -85,7 +59,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(erroResposta);
     }
 
-    // Tratamento para erros de validação de campos
+    // 3. Tratamento para erros de validação de campos (@Valid)
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             @NonNull MethodArgumentNotValidException ex,
@@ -94,23 +68,21 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull WebRequest request) {
         
         List<String> erros = new ArrayList<>();
-        
-        // Percorre os erros de validação e adiciona na lista de erros
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             erros.add(fieldError.getField() + ": " + fieldError.getDefaultMessage());
         }
-        
+
         ErroResposta erroResposta = new ErroResposta(
             status.value(),
             "Existem campos inválidos, confira o preenchimento",
             LocalDateTime.now(),
             erros
         );
-        
+
         return ResponseEntity.status(status).body(erroResposta);
     }
-    
-    // Tratamento para JSON mal formatado ou valores de enumeração inválidos
+
+    // 4. Tratamento para JSON mal formatado ou enum inválido
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             @NonNull HttpMessageNotReadableException ex,
@@ -120,57 +92,49 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         
         List<String> erros = new ArrayList<>();
         String mensagemEspecifica = ex.getMostSpecificCause().getMessage();
-        
-        // Personalizar mensagem baseada no tipo de erro
-        if (mensagemEspecifica.contains("enum")) {
+
+        if (mensagemEspecifica != null && mensagemEspecifica.toLowerCase().contains("enum")) {
             erros.add("Valor de enumeração inválido: " + mensagemEspecifica);
-        } else if (mensagemEspecifica.contains("JSON")) {
+        } else if (mensagemEspecifica != null && mensagemEspecifica.toLowerCase().contains("json")) {
             erros.add("Formato JSON inválido: " + mensagemEspecifica);
         } else {
-            erros.add("Erro na leitura dos dados: " + mensagemEspecifica);
+            erros.add("Erro na leitura dos dados: " + (mensagemEspecifica != null ? mensagemEspecifica : ex.getMessage()));
         }
-        
+
         ErroResposta erroResposta = new ErroResposta(
             status.value(),
             "Dados mal formatados ou inválidos",
             LocalDateTime.now(),
             erros
         );
-        
+
         return ResponseEntity.status(status).body(erroResposta);
     }
 
-    // Tratamento genérico para RuntimeException não tratadas especificamente
+    // 5. Tratamento genérico para RuntimeException não tratadas especificamente
     @ExceptionHandler(RuntimeException.class)
     protected ResponseEntity<Object> handleRuntimeException(RuntimeException ex) {
+        ex.printStackTrace(); // Para debug em console (usar logger em produção)
         ErroResposta erroResposta = new ErroResposta(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "Erro interno do servidor",
             LocalDateTime.now(),
             List.of("Ocorreu um erro inesperado. Tente novamente mais tarde.")
         );
-        
-        // Log do erro para debug (em produção, usar um logger apropriado)
-        System.err.println("Erro não tratado: " + ex.getMessage());
-        ex.printStackTrace();
-        
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(erroResposta);
     }
 
-    // Tratamento para Exception genérica (fallback)
+    // 6. Tratamento fallback para Exception genérica
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<Object> handleGenericException(Exception ex) {
+        ex.printStackTrace(); // Para debug em console (usar logger em produção)
         ErroResposta erroResposta = new ErroResposta(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "Erro interno do servidor",
             LocalDateTime.now(),
             List.of("Ocorreu um erro inesperado. Contate o suporte.")
         );
-        
-        // Log do erro para debug
-        System.err.println("Erro genérico não tratado: " + ex.getMessage());
-        ex.printStackTrace();
-        
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(erroResposta);
     }
+
 }

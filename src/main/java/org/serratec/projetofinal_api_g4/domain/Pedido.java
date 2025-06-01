@@ -7,19 +7,7 @@ import java.util.List;
 
 import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -33,9 +21,9 @@ public class Pedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    private Long id; 
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cliente_id", nullable = false)
     @NotNull(message = "O cliente é obrigatório")
     private Cliente cliente;
@@ -44,22 +32,53 @@ public class Pedido {
     private List<PedidoProduto> produtos = new ArrayList<>();
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal valorTotal;
+    @NotNull(message = "O valor total é obrigatório")
+    private BigDecimal valorTotal = BigDecimal.ZERO;
 
     @Column(nullable = false)
+    @NotNull(message = "A data do pedido é obrigatória")
     private LocalDateTime dataPedido;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
+    @NotNull(message = "O status do pedido é obrigatório")
     private PedidoStatus status;
 
     public void adicionarProduto(PedidoProduto pedidoProduto) {
-        produtos.add(pedidoProduto);
-        pedidoProduto.setPedido(this);
+        if (pedidoProduto != null) {
+            produtos.add(pedidoProduto);
+            pedidoProduto.setPedido(this);
+            atualizarValorTotal();
+        }
     }
 
     public void removerProduto(PedidoProduto pedidoProduto) {
-        produtos.remove(pedidoProduto);
-        pedidoProduto.setPedido(null);
+        if (pedidoProduto != null && produtos.remove(pedidoProduto)) {
+            pedidoProduto.setPedido(null);
+            atualizarValorTotal();
+        }
+    }
+
+    public void atualizarValorTotal() {
+        this.valorTotal = produtos.stream()
+                .map(PedidoProduto::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public void setCliente(Pedido cliente2) {
+        if (cliente2 != null) {
+            this.cliente = cliente2.getCliente();
+        } else {
+            throw new IllegalArgumentException("Cliente não pode ser nulo");
+        }
+    }
+
+    public void setCliente(Cliente cliente2) {
+        if (cliente2 != null) {
+            this.cliente = cliente2;
+        } else {
+            throw new IllegalArgumentException("Cliente não pode ser nulo");
+        }
+
     }
 }

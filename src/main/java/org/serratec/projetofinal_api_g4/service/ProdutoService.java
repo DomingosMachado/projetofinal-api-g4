@@ -1,5 +1,6 @@
 package org.serratec.projetofinal_api_g4.service;
 
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,16 +28,16 @@ public class ProdutoService {
     @Transactional
     public ProdutoDTO inserir(ProdutoDTO dto) {
         Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
 
         Produto produto = new Produto();
         produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
         produto.setPreco(dto.getPreco());
-        produto.setPrecoAtual(dto.getPreco()); // Usar o mesmo valor do preço
+        produto.setPrecoAtual(dto.getPreco()); // Sincronizar preço atual
         produto.setQuantidade(dto.getQuantidade());
-        produto.setEstoque(dto.getQuantidade()); // Usar o mesmo valor da quantidade
+        produto.setEstoque(dto.getQuantidade()); // Sincronizar estoque inicial com quantidade
         produto.setCategoria(categoria);
 
         produto = produtoRepository.save(produto);
@@ -46,19 +47,19 @@ public class ProdutoService {
     @Transactional
     public ProdutoDTO atualizar(Long id, ProdutoDTO dto) {
         Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
 
         Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
 
         produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
         produto.setPreco(dto.getPreco());
-        produto.setPrecoAtual(dto.getPreco()); // Atualizar o preço atual também
+        produto.setPrecoAtual(dto.getPreco()); // Atualizar preço atual também
         produto.setQuantidade(dto.getQuantidade());
-        produto.setEstoque(dto.getQuantidade()); // Atualizar o estoque também
+        produto.setEstoque(dto.getQuantidade()); // Atualizar estoque também
         produto.setCategoria(categoria);
 
         produto = produtoRepository.save(produto);
@@ -68,8 +69,8 @@ public class ProdutoService {
     @Transactional
     public ProdutoDTO buscarPorId(Long id) {
         Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
 
         return new ProdutoDTO(produto);
     }
@@ -84,25 +85,16 @@ public class ProdutoService {
 
     @Transactional
     public void deletar(Long id) {
-        if (!produtoRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id);
+        Produto produto = produtoRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
+
+        // Verifica se o produto está vinculado a algum pedido
+        if (produto.getPedidoProdutos() != null && !produto.getPedidoProdutos().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Não é possível deletar o produto, pois ele está vinculado a um ou mais pedidos.");
         }
-        produtoRepository.deleteById(id);
+
+        produtoRepository.delete(produto);
     }
-
-//     @Transactional
-//     public List<ProdutoDTO> buscarPorCategoria(Long categoriaId) {
-//         List<Produto> produtos = produtoRepository.findByCategoriaId(categoriaId);
-//         return produtos.stream()
-//                 .map(ProdutoDTO::new)
-//                 .collect(Collectors.toList());
-//     }
-
-//     @Transactional
-//     public List<ProdutoDTO> buscarPorNome(String nome) {
-//         List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCase(nome);
-//         return produtos.stream()
-//                 .map(ProdutoDTO::new)
-//                 .collect(Collectors.toList());
-//     }
 }

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.serratec.projetofinal_api_g4.domain.Cliente;
+import org.serratec.projetofinal_api_g4.dto.ClienteDTO;
+import org.serratec.projetofinal_api_g4.dto.PedidoDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 // import org.springframework.data.jpa.repository.Query;
 // import org.springframework.data.repository.query.Param;
@@ -32,6 +34,10 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     
     // Buscar clientes por nome (contendo)
     List<Cliente> findByNomeContainingIgnoreCase(String nome);
+
+
+
+    PedidoDTO findById(ClienteDTO cliente);
     
     // // Buscar clientes por cidade
     // @Query("SELECT c FROM Cliente c WHERE c.endereco.cidade = :cidade")

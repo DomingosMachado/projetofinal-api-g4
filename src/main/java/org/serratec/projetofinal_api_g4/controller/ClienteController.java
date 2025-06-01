@@ -1,10 +1,10 @@
 package org.serratec.projetofinal_api_g4.controller;
 
+
 import java.util.List;
 
 import org.serratec.projetofinal_api_g4.dto.ClienteDTO;
 import org.serratec.projetofinal_api_g4.service.ClienteService;
-import org.serratec.projetofinal_api_g4.exception.ClienteNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +28,7 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
-    @Operation(summary = "Listar todos os clientes")
+   @Operation(summary = "Listar todos os clientes")
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ClienteDTO>> listar() {
@@ -43,11 +43,8 @@ public class ClienteController {
     @GetMapping("/{id}")
     @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
     public ResponseEntity<ClienteDTO> buscar(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(clienteService.buscarPorId(id));
-        } catch (ClienteNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        ClienteDTO cliente = clienteService.buscarPorId(id);
+        return ResponseEntity.ok(cliente);
     }
 
     @Operation(summary = "Cadastrar novo cliente")
@@ -57,12 +54,8 @@ public class ClienteController {
     })
     @PostMapping
     public ResponseEntity<ClienteDTO> inserir(@Valid @RequestBody ClienteDTO clienteDTO) {
-        try {
-            ClienteDTO cliente = clienteService.inserir(clienteDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(cliente);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        ClienteDTO cliente = clienteService.inserir(clienteDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(cliente);
     }
 
     @Operation(summary = "Atualizar cliente existente")
@@ -76,11 +69,8 @@ public class ClienteController {
     public ResponseEntity<ClienteDTO> atualizar(
             @Valid @RequestBody ClienteDTO clienteDTO,
             @PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(clienteService.atualizar(id, clienteDTO));
-        } catch (ClienteNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        ClienteDTO clienteAtualizado = clienteService.atualizar(id, clienteDTO);
+        return ResponseEntity.ok(clienteAtualizado);
     }
 
     @Operation(summary = "Remover cliente")
@@ -91,12 +81,8 @@ public class ClienteController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        try {
-            clienteService.deletar(id);
-            return ResponseEntity.noContent().build();
-        } catch (ClienteNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        clienteService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

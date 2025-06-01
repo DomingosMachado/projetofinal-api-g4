@@ -21,12 +21,15 @@ public class CategoriaDTO {
     @Size(max = 500, message = "A descrição deve ter no máximo 500 caracteres")
     private String descricao;
 
-    public CategoriaDTO(Categoria categoria) {
+    // Conversão de Entidade para DTO
+     public CategoriaDTO(Categoria categoria) {
         this.id = categoria.getId();
         this.nome = categoria.getNome();
         this.descricao = categoria.getDescricao();
     }
+    
 
+    // Conversão de DTO para Entidade
     public Categoria toEntity() {
         Categoria categoria = new Categoria();
         categoria.setId(this.id);
@@ -34,4 +37,7 @@ public class CategoriaDTO {
         categoria.setDescricao(this.descricao);
         return categoria;
     }
+
+   
 }
+

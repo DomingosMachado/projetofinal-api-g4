@@ -9,10 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@Slf4j
 public class EmailService {
 
     @Autowired
@@ -26,9 +23,9 @@ public class EmailService {
             SimpleMailMessage message = criarMensagem(email, nome, "Confirmação de Cadastro", 
                 "Seu cadastro foi realizado com sucesso!");
             mailSender.send(message);
-            log.info("Email de confirmação enviado para: {}", email);
+            System.out.println("Email de confirmação enviado para: " + email);
         } catch (MailException e) {
-            log.error("Erro ao enviar email de confirmação para {}: {}", email, e.getMessage());
+            System.out.println("Erro ao enviar email de confirmação para " + email + ": " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao enviar email de confirmação");
         }
     }
@@ -38,9 +35,9 @@ public class EmailService {
             SimpleMailMessage message = criarMensagem(email, nome, "Atualização de Cadastro", 
                 "Seus dados foram atualizados com sucesso!");
             mailSender.send(message);
-            log.info("Email de atualização enviado para: {}", email);
+            System.out.println("Email de atualização enviado para: " + email);
         } catch (MailException e) {
-            log.error("Erro ao enviar email de atualização para {}: {}", email, e.getMessage());
+            System.out.println("Erro ao enviar email de atualização para " + email + ": " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao enviar email de atualização");
         }
     }
@@ -50,9 +47,9 @@ public class EmailService {
             SimpleMailMessage message = criarMensagem(email, nome, "Confirmação de Pedido", 
                 "Seu pedido número " + numeroPedido + " foi realizado com sucesso!");
             mailSender.send(message);
-            log.info("Email de pedido enviado para: {}", email);
+            System.out.println("Email de pedido enviado para: " + email);
         } catch (MailException e) {
-            log.error("Erro ao enviar email de pedido para {}: {}", email, e.getMessage());
+            System.out.println("Erro ao enviar email de pedido para " + email + ": " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao enviar email de pedido");
         }
     }

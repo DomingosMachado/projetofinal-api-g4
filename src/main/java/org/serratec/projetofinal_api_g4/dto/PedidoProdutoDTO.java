@@ -2,6 +2,7 @@ package org.serratec.projetofinal_api_g4.dto;
 
 import java.math.BigDecimal;
 
+import org.serratec.projetofinal_api_g4.domain.Pedido;
 import org.serratec.projetofinal_api_g4.domain.PedidoProduto;
 
 import jakarta.validation.constraints.DecimalMin;
@@ -15,55 +16,44 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PedidoProdutoDTO {
-    
     private Long id;
-    
+
     @NotNull(message = "O produto é obrigatório")
-    private Long produtoId;
-    
+    private ProdutoDTO produto;
+
     @NotNull(message = "A quantidade é obrigatória")
     @Positive(message = "A quantidade deve ser positiva")
     private Integer quantidade;
-    
-    private BigDecimal precoUnitario;
-    
+
     @DecimalMin(value = "0.0", message = "O desconto não pode ser negativo")
-    private BigDecimal desconto = BigDecimal.ZERO;
-    
-    private BigDecimal subtotal;
+    private BigDecimal desconto;
 
     public PedidoProdutoDTO(PedidoProduto pedidoProduto) {
         this.id = pedidoProduto.getId();
-        this.produtoId = pedidoProduto.getProduto() != null ? pedidoProduto.getProduto().getId() : null;
+        this.produto = pedidoProduto.getProduto() != null ? new ProdutoDTO(pedidoProduto.getProduto()) : null;
         this.quantidade = pedidoProduto.getQuantidade();
-        this.precoUnitario = pedidoProduto.getPrecoUnitario();
-        this.desconto = pedidoProduto.getDesconto() != null ? pedidoProduto.getDesconto() : BigDecimal.ZERO;
-        this.subtotal = pedidoProduto.getSubtotal();
+        this.desconto = pedidoProduto.getDesconto();
     }
 
     public PedidoProduto toEntity() {
-        PedidoProduto pedidoProduto = new PedidoProduto();
-        pedidoProduto.setId(this.id);
-        pedidoProduto.setQuantidade(this.quantidade);
-        
-
-        if (this.precoUnitario != null) {
-            pedidoProduto.setPrecoUnitario(this.precoUnitario);
-        }
-        
-        pedidoProduto.setDesconto(this.desconto != null ? this.desconto : BigDecimal.ZERO);
-        return pedidoProduto;
+        PedidoProduto entity = new PedidoProduto();
+        entity.setId(this.id);
+        entity.setProduto(this.produto != null ? this.produto.toEntity() : null);
+        entity.setQuantidade(this.quantidade);
+        entity.setDesconto(this.desconto != null ? this.desconto : BigDecimal.ZERO);
+        entity.setPrecoUnitario(this.produto != null ? this.produto.getPreco() : BigDecimal.ZERO);
+        entity.calcularSubtotal();
+        return entity;
     }
 
-    public void calcularSubtotal() {
-        if (quantidade != null && precoUnitario != null) {
-            BigDecimal valorBruto = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-            BigDecimal valorDesconto = desconto != null ? desconto : BigDecimal.ZERO;
-            this.subtotal = valorBruto.subtract(valorDesconto);
-            
-            if (this.subtotal.compareTo(BigDecimal.ZERO) < 0) {
-                this.subtotal = BigDecimal.ZERO;
-            }
-        }
+    public PedidoProduto toEntity(Pedido pedido) {
+        PedidoProduto entity = toEntity(); // Reaproveita o método acima
+        entity.setPedido(pedido);          // Associa o pedido recebido
+        return entity;
     }
+
+    public BigDecimal getPrecoUnitario() {
+        return produto != null ? produto.getPreco() : BigDecimal.ZERO;
+    }
+
 }

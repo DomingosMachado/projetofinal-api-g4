@@ -14,25 +14,26 @@ public class JwtUtil {
     private final String JWT_SECRET = "suaChaveSecreta"; // Troque por uma chave forte
     private final long JWT_EXPIRATION_MS = 86400000; // 1 dia
 
+    // 🔥 Agora o método aceita o id, nome e email para construir o subject
     public String generateToken(Authentication authentication) {
-        String username = authentication.getName();
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_MS);
+    // O principal é o username, que você codificou como id:nome:email
+    String subject = authentication.getName(); // já está no formato id:nome:email
+    Date now = new Date();
+    Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION_MS);
 
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
-                .compact();
-    }
+    return Jwts.builder()
+            .setSubject(subject)
+            .setIssuedAt(now)
+            .setExpiration(expiryDate)
+            .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
+            .compact();
+}
 
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(JWT_SECRET)
                 .parseClaimsJws(token)
                 .getBody();
-
         return claims.getSubject();
     }
 

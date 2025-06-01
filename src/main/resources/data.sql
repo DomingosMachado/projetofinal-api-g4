@@ -32,20 +32,22 @@ INSERT INTO PRODUTO (NOME, DESCRICAO, PRECO, PRECO_ATUAL, QUANTIDADE, ESTOQUE, C
 ('Vestido', 'Vestido Feminino', 150.00, 150.00, 12, 12, 3);
 
 -- CLIENTES
-INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
-('Ana Silva', 'ana.silva@email.com', '123.456.789-01', '(21) 99999-0001', 'senha1', '20000-000', 'Rio de Janeiro', 'RJ', 'Centro', 'Rua 1', '10', '', 3304557);
+-- INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
+-- ('Ana Beatriz Mendes', 'ana.mendes@email.com', '987.654.321-88', '(85) 91234-5678', 'senhaAnaB', '60125-120', 'Fortaleza', 'CE', 'Meireles', 'Avenida Beira Mar', '202', 'Apto 1503', 2304400);
 
-INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
-('Bruno Souza', 'bruno.souza@email.com', '123.456.789-02', '(21) 99999-0002', 'senha2', '20000-001', 'Rio de Janeiro', 'RJ', 'Copacabana', 'Rua 2', '20', '', 3304557);
+-- INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
+-- ('Carlos Eduardo Lima', 'carlos.lima@email.com', '852.963.741-99', '(71) 99876-5432', 'senhaCarlos', '40170-010', 'Salvador', 'BA', 'Barra', 'Rua Carlos Gomes', '789', '', 2927408);
 
-INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
-('Carla Dias', 'carla.dias@email.com', '123.456.789-03', '(21) 99999-0003', 'senha3', '20000-002', 'Rio de Janeiro', 'RJ', 'Botafogo', 'Rua 3', '30', '', 3304557);
+-- INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
+-- ('Juliana Fernandes', 'juliana.fernandes@email.com', '741.852.963-11', '(51) 93456-7890', 'senhaJuliana', '90040-000', 'Porto Alegre', 'RS', 'Moinhos de Vento', 'Rua Padre Chagas', '456', 'Sala 302', 4314902);
 
-INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
-('Diego Lima', 'diego.lima@email.com', '123.456.789-04', '(21) 99999-0004', 'senha4', '20000-003', 'Rio de Janeiro', 'RJ', 'Tijuca', 'Rua 4', '40', '', 3304557);
+-- INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
+-- ('Marcelo Santos', 'marcelo.santos@email.com', '369.258.147-44', '(27) 98765-4321', 'senhaMarcelo', '29050-000', 'Vitória', 'ES', 'Praia do Canto', 'Avenida Dante Michelini', '321', '', 3205309);
 
-INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
-('Eduarda Nunes', 'eduarda.nunes@email.com', '123.456.789-05', '(21) 99999-0005', 'senha5', '20000-004', 'Rio de Janeiro', 'RJ', 'Lapa', 'Rua 5', '50', '', 3304557);
+-- INSERT INTO CLIENTE (NOME, EMAIL, CPF, TELEFONE, SENHA, CEP, CIDADE, UF, BAIRRO, LOGRADOURO, NUMERO, COMPLEMENTO, IBGE) VALUES
+-- ('Patrícia Gomes', 'patricia.gomes@email.com', '258.147.369-77', '(19) 99812-3456', 'senhaPatricia', '13040-010', 'Campinas', 'SP', 'Cambuí', 'Rua Coronel Quirino', '654', 'Casa 2', 3509502);
+
+
 
 -- PEDIDOS
 INSERT INTO PEDIDOS (DATA_PEDIDO, STATUS, VALOR_TOTAL, CLIENTE_ID) VALUES

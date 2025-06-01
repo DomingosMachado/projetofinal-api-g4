@@ -31,27 +31,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        // Skip JWT filter for login endpoint
-        if (request.getRequestURI().contains("/auth/login")) {
+
+        // Skip JWT filter for login endpoints
+        String requestURI = request.getRequestURI();
+        if (requestURI.contains("/auth/login")) {
             filterChain.doFilter(request, response);
             return;
         }
-        
+
         try {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
-                String username = jwtUtil.getUsernameFromToken(jwt);
+                String usernameWithDetails = jwtUtil.getUsernameFromToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = 
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                // 🔥 Extrair apenas o email do formato id:nome:email
+                String email = usernameWithDetails.substring(usernameWithDetails.lastIndexOf(":") + 1);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                // Se não houver autenticação no contexto atual, crie uma nova
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
+            logger.error("Não foi possível definir a autenticação do usuário: " + e.getMessage(), e);
         }
 
         filterChain.doFilter(request, response);
