@@ -103,13 +103,27 @@ public class SecurityConfig {
 
     public boolean isOwner(Long id) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof User)) {
+        if (authentication == null) {
             return false;
         }
+    
+        String username;
+        Object principal = authentication.getPrincipal();
+        
+        if (principal instanceof User) {
+            username = ((User) principal).getUsername();
+        } else if (principal instanceof String) {
+            username = (String) principal;
+        } else {
+            return false;
+        }
+    
 
-        User user = (User) authentication.getPrincipal();
-        String username = user.getUsername();  // "id:nome:email"
         String[] parts = username.split(":");
+        if (parts.length < 1) {
+            return false;
+        }
+    
         try {
             Long userId = Long.parseLong(parts[0]);
             return userId.equals(id);

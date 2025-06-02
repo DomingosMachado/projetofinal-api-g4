@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.serratec.projetofinal_api_g4.domain.Cliente;
-import org.serratec.projetofinal_api_g4.domain.Endereco;
+//import org.serratec.projetofinal_api_g4.domain.Endereco;
 import org.serratec.projetofinal_api_g4.dto.ClienteDTO;
-import org.serratec.projetofinal_api_g4.dto.ViaCepDTO;
+//import org.serratec.projetofinal_api_g4.dto.ViaCepDTO;
 import org.serratec.projetofinal_api_g4.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,8 +23,8 @@ public class ClienteService {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    @Autowired
-    private ViaCepService viaCepService;
+    // @Autowired
+    // private ViaCepService viaCepService;
 
     @Autowired
     private EmailService emailService;
@@ -123,38 +123,38 @@ public class ClienteService {
         return cpf.substring(0, 3) + "." + cpf.substring(3, 6) + "." + cpf.substring(6, 9) + "-" + cpf.substring(9);
     }
 
-    private String formatarTelefone(String telefone) {
-        telefone = telefone.replaceAll("\\D", "");
-        if (telefone.length() < 10 || telefone.length() > 11) {
-            throw new IllegalArgumentException("Telefone deve ter entre 10 e 11 dígitos");
-        }
-        if (telefone.length() == 10) {
-            return "(" + telefone.substring(0, 2) + ") " +
-                    telefone.substring(2, 6) + "-" +
-                    telefone.substring(6);
-        } else {
-            return "(" + telefone.substring(0, 2) + ") " +
-                    telefone.substring(2, 7) + "-" +
-                    telefone.substring(7);
-        }
-    }
+    // private String formatarTelefone(String telefone) {
+    //     telefone = telefone.replaceAll("\\D", "");
+    //     if (telefone.length() < 10 || telefone.length() > 11) {
+    //         throw new IllegalArgumentException("Telefone deve ter entre 10 e 11 dígitos");
+    //     }
+    //     if (telefone.length() == 10) {
+    //         return "(" + telefone.substring(0, 2) + ") " +
+    //                 telefone.substring(2, 6) + "-" +
+    //                 telefone.substring(6);
+    //     } else {
+    //         return "(" + telefone.substring(0, 2) + ") " +
+    //                 telefone.substring(2, 7) + "-" +
+    //                 telefone.substring(7);
+    //     }
+    // }
 
-    private Endereco criarEndereco(ViaCepDTO viaCep, ClienteDTO clienteDTO) {
-        Endereco endereco = new Endereco();
-        return atualizarEndereco(endereco, viaCep, clienteDTO);
-    }
+    // private Endereco criarEndereco(ViaCepDTO viaCep, ClienteDTO clienteDTO) {
+    //     Endereco endereco = new Endereco();
+    //     return atualizarEndereco(endereco, viaCep, clienteDTO);
+    // }
 
-    private Endereco atualizarEndereco(Endereco endereco, ViaCepDTO viaCep, ClienteDTO clienteDTO) {
-        endereco.setLogradouro(viaCep.getLogradouro());
-        endereco.setNumero(clienteDTO.getEndereco().getNumero());
-        endereco.setComplemento(clienteDTO.getEndereco().getComplemento());
-        endereco.setBairro(viaCep.getBairro());
-        endereco.setCidade(viaCep.getCidade());
-        endereco.setCep(viaCep.getCep()); // Formatado
-        endereco.setUf(viaCep.getUf().toUpperCase());
-        endereco.setIbge(viaCep.getIbge() != null ? Long.parseLong(viaCep.getIbge()) : null);
-        return endereco;
-    }
+   // private Endereco atualizarEndereco(Endereco endereco, ViaCepDTO viaCep, ClienteDTO clienteDTO) {
+   //     endereco.setLogradouro(viaCep.getLogradouro());
+   //     endereco.setNumero(clienteDTO.getEndereco().getNumero());
+   //     endereco.setComplemento(clienteDTO.getEndereco().getComplemento());
+   //     endereco.setBairro(viaCep.getBairro());
+   //     endereco.setCidade(viaCep.getCidade());
+   //     endereco.setCep(viaCep.getCep()); // Formatado
+   //     endereco.setUf(viaCep.getUf().toUpperCase());
+   //     endereco.setIbge(viaCep.getIbge() != null ? Long.parseLong(viaCep.getIbge()) : null);
+   //     return endereco;
+  //  }
 
     public boolean isClienteAutenticado(Long id) {
         String principalUsername = SecurityContextHolder.getContext().getAuthentication().getName();
