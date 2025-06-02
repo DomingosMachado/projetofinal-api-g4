@@ -56,6 +56,11 @@ public class PedidoProduto {
     @Column(precision = 10, scale = 2)
     private BigDecimal subtotal;
 
+    @ManyToOne
+    @JoinColumn(name = "compra_fornecedor_id") 
+    private CompraFornecedor compra;
+
+
     public void calcularSubtotal() {
         if (quantidade != null && precoUnitario != null) {
             BigDecimal valorBruto = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
