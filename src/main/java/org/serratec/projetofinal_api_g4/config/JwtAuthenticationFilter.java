@@ -63,8 +63,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Extrai as authorities do JWT
                 Map<String, Object> claims = jwtUtil.getAllClaimsFromToken(jwt);
-                List<String> authorities = (List<String>) claims.get("authorities");
-                List<GrantedAuthority> grantedAuthorities = authorities.stream()
+                List<?> rawAuthorities = (List<?>) claims.get("authorities");
+                List<GrantedAuthority> grantedAuthorities = rawAuthorities.stream()
+                        .filter(String.class::isInstance)
+                        .map(String.class::cast)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 

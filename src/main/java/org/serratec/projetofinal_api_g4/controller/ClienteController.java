@@ -64,9 +64,9 @@ public class ClienteController {
         @ApiResponse(responseCode = "200", description = "Cliente atualizado"),
         @ApiResponse(responseCode = "404", description = "Cliente não encontrado"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    })
+    })    
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR') or @securityService.isOwner(#id)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR') or (hasRole('CLIENTE') and @securityService.isOwner(#id))")
     public ResponseEntity<ClienteDTO> atualizar(
             @Valid @RequestBody ClienteDTO clienteDTO,
             @PathVariable Long id) {

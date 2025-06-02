@@ -45,10 +45,11 @@ public class PedidoProdutoDTO {
         entity.calcularSubtotal();
         return entity;
     }
-
-    public PedidoProduto toEntity(Pedido pedido) {
-        PedidoProduto entity = toEntity(); // Reaproveita o método acima
-        entity.setPedido(pedido);          // Associa o pedido recebido
+    
+    
+    public PedidoProduto toEntityWithPedido(Pedido pedido) {
+        PedidoProduto entity = toEntity();
+        entity.setPedido(pedido);          
         return entity;
     }
 

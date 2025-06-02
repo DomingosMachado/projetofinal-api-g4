@@ -2,61 +2,67 @@ package org.serratec.projetofinal_api_g4.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.serratec.projetofinal_api_g4.domain.Pedido;
 import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Data
-@NoArgsConstructor
+import jakarta.validation.constraints.NotNull;
+
 public class PedidoDTO {
 
     private Long id;
 
-    @Valid
-    @NotNull(message = "O cliente é obrigatório")
+    @NotNull(message = "Cliente é obrigatório")
     private ClienteDTO cliente;
 
-    @Valid
-    @NotNull(message = "A lista de produtos não pode ser nula")
-    private List<PedidoProdutoDTO> produtos = new ArrayList<>();
+    @JsonProperty("itens") // Mapear tanto "itens" quanto "produtos"
+    @NotNull(message = "Lista de itens é obrigatória")
+    private List<PedidoProdutoDTO> itens;
 
-    @NotNull(message = "O valor total é obrigatório")
+    private LocalDateTime dataPedido;
+    private PedidoStatus status;
     private BigDecimal valorTotal;
 
-    @NotNull(message = "A data do pedido é obrigatória")
-    private LocalDateTime dataPedido;
-
-    @NotNull(message = "O status do pedido é obrigatório")
-    private PedidoStatus status;
+    // Construtores
+    public PedidoDTO() {}
 
     public PedidoDTO(Pedido pedido) {
         this.id = pedido.getId();
-        this.cliente = pedido.getCliente() != null ? new ClienteDTO(pedido.getCliente()) : null;
-        this.produtos = pedido.getProdutos() != null 
-            ? pedido.getProdutos().stream().map(PedidoProdutoDTO::new).collect(Collectors.toList()) 
-            : new ArrayList<>();
-        this.valorTotal = pedido.getValorTotal();
+        this.cliente = new ClienteDTO(pedido.getCliente());
         this.dataPedido = pedido.getDataPedido();
         this.status = pedido.getStatus();
+        this.valorTotal = pedido.getValorTotal();
+        
+        if (pedido.getProdutos() != null) {
+            this.itens = pedido.getProdutos().stream()
+                    .map(PedidoProdutoDTO::new)
+                    .toList();
+        }
     }
 
-    public Pedido toEntityWithoutCliente() {
-        Pedido pedido = new Pedido();
-        pedido.setId(this.id);
-        pedido.setDataPedido(this.dataPedido);
-        pedido.setStatus(this.status);
-        pedido.setValorTotal(this.valorTotal != null ? this.valorTotal : BigDecimal.ZERO);
-        if (this.produtos != null) {
-            this.produtos.forEach(pp -> pedido.adicionarProduto(pp.toEntity(pedido)));
-        }
-        return pedido;
-    }
+    // Getters e Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public ClienteDTO getCliente() { return cliente; }
+    public void setCliente(ClienteDTO cliente) { this.cliente = cliente; }
+
+    public List<PedidoProdutoDTO> getItens() { return itens; }
+    public void setItens(List<PedidoProdutoDTO> itens) { this.itens = itens; }
+
+    // Método alias para manter compatibilidade
+    public List<PedidoProdutoDTO> getProdutos() { return itens; }
+    public void setProdutos(List<PedidoProdutoDTO> produtos) { this.itens = produtos; }
+
+    public LocalDateTime getDataPedido() { return dataPedido; }
+    public void setDataPedido(LocalDateTime dataPedido) { this.dataPedido = dataPedido; }
+
+    public PedidoStatus getStatus() { return status; }
+    public void setStatus(PedidoStatus status) { this.status = status; }
+
+    public BigDecimal getValorTotal() { return valorTotal; }
+    public void setValorTotal(BigDecimal valorTotal) { this.valorTotal = valorTotal; }
 }

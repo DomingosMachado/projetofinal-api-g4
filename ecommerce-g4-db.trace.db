@@ -638,3 +638,9 @@ Caused by: org.h2.mvstore.MVStoreException: The file is locked: C:/Users/SERRATE
 	at org.h2.mvstore.SingleFileStore.open(SingleFileStore.java:81)
 	at org.h2.mvstore.MVStore.<init>(MVStore.java:286)
 	... 63 more
+2025-06-02 05:37:50.244842-03:00 jdbc[135]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PEDIDO" not found; SQL statement:
+SELECT p.* 
+FROM pedido p
+WHERE p.cliente_id = 2
+ORDER BY p.data_pedido DESC [42102-232]

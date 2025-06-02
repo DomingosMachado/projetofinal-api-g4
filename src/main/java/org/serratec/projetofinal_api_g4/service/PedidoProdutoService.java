@@ -53,7 +53,7 @@ public class PedidoProdutoService {
         // Garante que o preço unitário do DTO esteja correto conforme o produto real
         dto.getProduto().setPreco(produto.getPreco());
 
-        PedidoProduto pedidoProduto = dto.toEntity(pedido);
+        PedidoProduto pedidoProduto = dto.toEntityWithPedido(pedido);
         pedidoProduto.setPrecoUnitario(produto.getPreco());
         pedidoProduto.calcularSubtotal();
 

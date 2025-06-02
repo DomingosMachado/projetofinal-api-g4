@@ -1,6 +1,11 @@
 package org.serratec.projetofinal_api_g4.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
+import org.serratec.projetofinal_api_g4.domain.Cliente;
 import org.serratec.projetofinal_api_g4.domain.Pedido;
 import org.serratec.projetofinal_api_g4.domain.PedidoProduto;
 import org.serratec.projetofinal_api_g4.domain.Produto;
@@ -16,276 +21,169 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.transaction.Transactional;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PedidoService {
 
     @Autowired
     private PedidoRepository pedidoRepository;
-    
-    @Autowired
-    private ProdutoRepository produtoRepository;
-    
-    @Autowired
-    private EmailService emailService;
 
     @Autowired
     private ClienteRepository clienteRepository;
 
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    @Autowired
+    private EmailService emailService;
+
     public List<Pedido> listarTodos() {
-        Optional<List<Pedido>> pedidosOpt = Optional.ofNullable(pedidoRepository.findAll());
-        if (pedidosOpt.isEmpty() || pedidosOpt.get().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nenhum pedido encontrado");
-        }
         return pedidoRepository.findAll();
     }
 
     public Optional<Pedido> buscarPorId(Long id) {
-        if (id == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID do pedido não pode ser nulo");
-        }
         return pedidoRepository.findById(id);
     }
 
-    @Transactional
-    public Pedido salvar(Pedido pedido) {
-        verificarEstoque(pedido);
-        
-        if (pedido.getDataPedido() == null) {
-            pedido.setDataPedido(LocalDateTime.now());
-        }
-        
-        if (pedido.getStatus() == null) {
-            pedido.setStatus(PedidoStatus.PENDENTE);
-        }
-        
-        recalcularValorTotal(pedido);
-        
-        Pedido pedidoSalvo = pedidoRepository.save(pedido);
-        
-        atualizarEstoque(pedidoSalvo);
-        
-        try {
-            String numeroPedido = String.valueOf(pedidoSalvo.getId());
-            emailService.enviarEmailPedido(
-                pedidoSalvo.getCliente().getEmail(),
-                pedidoSalvo.getCliente().getNome(),
-                numeroPedido
-            );
-        } catch (Exception e) {
-            System.err.println("Erro ao enviar email de confirmação do pedido: " + e.getMessage());
-        }
-        
-        return pedidoSalvo;
-    }
-
-    @Transactional
-    public void buscarPedidoCliente(Long id, String emailCliente){
-        Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Pedido não encontrado"
-                ));
-
-        if (!pedido.getCliente().getEmail().equals(emailCliente)) {
-            throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN, "Você não tem permissão para acessar este pedido"
-            );
-        }
-        
-    
-    }
-
-    
-    @Transactional
-    public Pedido atualizar(Long id, Pedido pedidoAtualizado) {
-        return pedidoRepository.findById(id)
-                .map(pedido -> {
-                    PedidoStatus statusAntigo = pedido.getStatus();
-                    
-                    if (statusAntigo == PedidoStatus.CANCELADO || statusAntigo == PedidoStatus.ENTREGUE) {
-                        throw new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST, 
-                            "Não é possível atualizar um pedido com status " + statusAntigo
-                        );
-                    }
-                    
-                    if (pedidoAtualizado.getProdutos() != null && !pedidoAtualizado.getProdutos().isEmpty()) {
-                        restaurarEstoque(pedido);
-                        verificarEstoque(pedidoAtualizado);
-                    }
-                    
-                    pedido.setDataPedido(pedidoAtualizado.getDataPedido());
-                    pedido.setStatus(pedidoAtualizado.getStatus());
-                    pedido.setCliente(pedidoAtualizado.getCliente());
-                    
-                    pedido.getProdutos().clear();
-                    if (pedidoAtualizado.getProdutos() != null) {
-                        for (PedidoProduto pp : pedidoAtualizado.getProdutos()) {
-                            pedido.adicionarProduto(pp);
-                        }
-                    }
-                    
-                    recalcularValorTotal(pedido);
-                    
-                    Pedido pedidoAtualizadoNoBanco = pedidoRepository.save(pedido);
-                    
-                    if (pedidoAtualizadoNoBanco.getStatus() != PedidoStatus.CANCELADO) {
-                        atualizarEstoque(pedidoAtualizadoNoBanco);
-                    }
-                    
-                    if (!statusAntigo.equals(pedidoAtualizadoNoBanco.getStatus())) {
-                        try {
-                            String numeroPedido = String.valueOf(pedidoAtualizadoNoBanco.getId());
-                            emailService.enviarEmailPedido(
-                                pedidoAtualizadoNoBanco.getCliente().getEmail(),
-                                pedidoAtualizadoNoBanco.getCliente().getNome(),
-                                numeroPedido
-                            );
-                        } catch (Exception e) {
-                            System.err.println("Erro ao enviar email de atualização do pedido: " + e.getMessage());
-                        }
-                    }
-                    
-                    return pedidoAtualizadoNoBanco;
-                })
-                .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Pedido não encontrado"
-                ));
-    }
     public List<Pedido> buscarPorClienteId(Long clienteId) {
-    return pedidoRepository.findByClienteId(clienteId);
-}
+        return pedidoRepository.findByClienteId(clienteId);
+    }
 
     @Transactional
-    public void deletar(Long id) {
-        Optional<Pedido> pedidoOpt = pedidoRepository.findById(id);
-        if (pedidoOpt.isPresent()) {
-            Pedido pedido = pedidoOpt.get();
-            
-            if (pedido.getStatus() != PedidoStatus.PENDENTE) {
-                throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, 
-                    "Só é possível excluir pedidos com status PENDENTE"
-                );
-            }
-            
-            restaurarEstoque(pedido);
-            
-            pedidoRepository.deleteById(id);
-            
-            // Enviar email notificando exclusão do pedido
-            try {
-                emailService.enviarEmailPedido(
-                    pedido.getCliente().getEmail(),
-                    pedido.getCliente().getNome(),
-                    String.valueOf(pedido.getId())
-                );
-            } catch (Exception e) {
-                System.err.println("Erro ao enviar email de exclusão do pedido: " + e.getMessage());
-            }
-            
-        } else {
-            throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Pedido não encontrado"
-            );
-        }
-    }
-    
-    private void verificarEstoque(Pedido pedido) {
-        for (PedidoProduto pp : pedido.getProdutos()) {
-            Produto produto = pp.getProduto();
-            
-            Produto produtoAtualizado = produtoRepository.findById(produto.getId())
-                .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Produto não encontrado: " + produto.getId()
-                ));
-            
-            if (produtoAtualizado.getEstoque() < pp.getQuantidade()) {
-                throw new ResponseStatusException(
-                     HttpStatus.BAD_REQUEST,
-                    "Estoque insuficiente para o produto " + produtoAtualizado.getNome() + 
-                    ". Disponível: " + produtoAtualizado.getEstoque() + 
-                    ", Solicitado: " + pp.getQuantidade()
-                );
-            }
-            
-            pp.setProduto(produtoAtualizado);
-            
-            if (pp.getPrecoUnitario() == null) {
-                pp.setPrecoUnitario(produtoAtualizado.getPrecoAtual());
-            }
-        }
-    }
-    
-    private void atualizarEstoque(Pedido pedido) {
-        if (pedido.getStatus() == PedidoStatus.CANCELADO) {
-            return;
-        }
-        
-        for (PedidoProduto pp : pedido.getProdutos()) {
-            Produto produto = pp.getProduto();
-            
-            produto.setEstoque(produto.getEstoque() - pp.getQuantidade());
-            produtoRepository.save(produto);
-        }
-    }
-    
-    private void restaurarEstoque(Pedido pedido) {
-        if (pedido.getStatus() == PedidoStatus.CANCELADO) {
-            return;
-        }
-        
-        for (PedidoProduto pp : pedido.getProdutos()) {
-            Produto produto = pp.getProduto();
-            
-            Produto produtoAtualizado = produtoRepository.findById(produto.getId())
-                .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Produto não encontrado: " + produto.getId()
-                ));
-            
-            produtoAtualizado.setEstoque(produtoAtualizado.getEstoque() + pp.getQuantidade());
-            produtoRepository.save(produtoAtualizado);
-        }
-    }
-    
-    private void recalcularValorTotal(Pedido pedido) {
-        java.math.BigDecimal valorTotal = java.math.BigDecimal.ZERO;
-        
-        for (PedidoProduto pp : pedido.getProdutos()) {
-            pp.calcularSubtotal();
-            if (pp.getSubtotal() != null) {
-                valorTotal = valorTotal.add(pp.getSubtotal());
-            }
-        }
-        
-        pedido.setValorTotal(valorTotal);
-    }
-
     public PedidoDTO inserir(PedidoDTO pedidoDTO) {
-      Pedido cliente = clienteRepository.findById(pedidoDTO.getCliente()).toEntityWithoutCliente();
-
+        if (pedidoDTO.getCliente() == null || pedidoDTO.getCliente().getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cliente é obrigatório");
+        }
+    
+        if (pedidoDTO.getItens() == null || pedidoDTO.getItens().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pedido deve ter pelo menos um item");
+        }
+    
+        Cliente cliente = clienteRepository.findById(pedidoDTO.getCliente().getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, 
+                    "Cliente não encontrado com ID: " + pedidoDTO.getCliente().getId()
+                ));
+    
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
         pedido.setDataPedido(LocalDateTime.now());
         pedido.setStatus(PedidoStatus.PENDENTE);
         pedido.setValorTotal(BigDecimal.ZERO);
-
-        if (pedidoDTO.getProdutos() == null || pedidoDTO.getProdutos().isEmpty()) {
-            throw new IllegalArgumentException("O pedido precisa conter pelo menos um produto.");
+    
+        for (PedidoProdutoDTO ppDTO : pedidoDTO.getItens()) {
+            if (ppDTO.getProduto() == null || ppDTO.getProduto().getId() == null) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, 
+                    "ID do produto é obrigatório em todos os itens"
+                );
+            }
+    
+            Produto produto = produtoRepository.findById(ppDTO.getProduto().getId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, 
+                        "Produto não encontrado com ID: " + ppDTO.getProduto().getId()
+                    ));
+    
+            if (produto.getEstoque() < ppDTO.getQuantidade()) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, 
+                    "Estoque insuficiente para o produto: " + produto.getNome() + 
+                    ". Estoque disponível: " + produto.getEstoque()
+                );
+            }
+    
+            PedidoProduto pedidoProduto = new PedidoProduto();
+            pedidoProduto.setProduto(produto);
+            pedidoProduto.setQuantidade(ppDTO.getQuantidade());
+            pedidoProduto.setPrecoUnitario(produto.getPrecoAtual());
+            pedidoProduto.setDesconto(ppDTO.getDesconto() != null ? ppDTO.getDesconto() : BigDecimal.ZERO);
+            
+            pedidoProduto.calcularSubtotal();
+            
+            pedido.adicionarProduto(pedidoProduto);
         }
-
-        for (PedidoProdutoDTO ppDTO : pedidoDTO.getProdutos()) {
-            pedido.adicionarProduto(ppDTO.toEntity(pedido));
+    
+        pedido.setValorTotal(pedido.getProdutos().stream()
+                .map(PedidoProduto::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
+    
+        Pedido pedidoSalvo = pedidoRepository.save(pedido);
+    
+        for (PedidoProduto pp : pedidoSalvo.getProdutos()) {
+            Produto produto = pp.getProduto();
+            produto.setEstoque(produto.getEstoque() - pp.getQuantidade());
+            produtoRepository.save(produto);
         }
-
-        Pedido salvo = pedidoRepository.save(pedido);
-        return new PedidoDTO(salvo);
+    
+        try {
+            emailService.enviarEmailPedido(
+                pedidoSalvo.getCliente().getEmail(),
+                pedidoSalvo.getCliente().getNome(),
+                pedidoSalvo.getId().toString()
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar email de confirmação: " + e.getMessage());
+        }
+    
+        return new PedidoDTO(pedidoSalvo);
     }
 
-  
+    @Transactional
+    public Pedido atualizar(Long id, Pedido pedidoAtualizado) {
+        Pedido pedidoExistente = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                    "Pedido não encontrado com ID: " + id));
+
+        if (pedidoExistente.getStatus() == PedidoStatus.CANCELADO || 
+            pedidoExistente.getStatus() == PedidoStatus.ENTREGUE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Pedido não pode ser atualizado. Status atual: " + pedidoExistente.getStatus());
+        }
+
+        pedidoExistente.setStatus(pedidoAtualizado.getStatus());
+        
+        if (pedidoAtualizado.getProdutos() != null && !pedidoAtualizado.getProdutos().isEmpty()) {
+            pedidoExistente.getProdutos().clear();
+            for (PedidoProduto item : pedidoAtualizado.getProdutos()) {
+                item.setPedido(pedidoExistente);
+                pedidoExistente.adicionarProduto(item);
+            }
+            pedidoExistente.atualizarValorTotal();
+        }
+
+        return pedidoRepository.save(pedidoExistente);
+    }
+
+    @Transactional
+    public void deletar(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                    "Pedido não encontrado com ID: " + id));
+
+        if (pedido.getStatus() == PedidoStatus.ENVIADO || 
+            pedido.getStatus() == PedidoStatus.ENTREGUE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Pedido não pode ser excluído. Status atual: " + pedido.getStatus());
+        }
+
+        pedidoRepository.delete(pedido);
+    }
+
+    @Transactional
+    public Pedido salvar(Pedido pedido) {
+        return pedidoRepository.save(pedido);
+    }
+
+    public boolean isValidStatusTransition(PedidoStatus atual, PedidoStatus novo) {
+        if (atual == PedidoStatus.CANCELADO || atual == PedidoStatus.ENTREGUE) {
+            return false;
+        }
+
+        if (novo == PedidoStatus.PENDENTE && atual != PedidoStatus.PENDENTE) {
+            return false;
+        }
+
+        return true;
+    }
 }
-    

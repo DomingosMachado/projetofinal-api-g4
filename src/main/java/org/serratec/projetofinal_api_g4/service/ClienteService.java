@@ -62,6 +62,17 @@ public class ClienteService {
         novoCliente.setSenha(encoder.encode(clienteDTO.getSenha()));
 
         clienteRepository.save(novoCliente);
+
+        try {
+            emailService.enviarEmailConfirmacao(
+                novoCliente.getEmail(),
+                novoCliente.getNome()
+            );
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar e-mail de confirmação: " + e.getMessage());
+            // Não interrompe o fluxo, apenas registra o erro
+        }
+        
         return new ClienteDTO(novoCliente);
     }
 
