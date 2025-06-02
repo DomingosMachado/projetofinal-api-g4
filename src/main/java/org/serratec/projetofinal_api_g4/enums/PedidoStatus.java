@@ -2,10 +2,8 @@ package org.serratec.projetofinal_api_g4.enums;
 
 public enum PedidoStatus {
     PENDENTE("Pendente"),
-    CONFIRMADO("Confirmado"),
     ENVIADO("Enviado"),
-    ENTREGUE("Entregue"),
-    CANCELADO("Cancelado");
+    ENTREGUE("Entregue");
 
     private final String descricao;
 

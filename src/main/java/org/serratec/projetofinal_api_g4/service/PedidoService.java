@@ -135,8 +135,7 @@ public class PedidoService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
                     "Pedido não encontrado com ID: " + id));
 
-        if (pedidoExistente.getStatus() == PedidoStatus.CANCELADO || 
-            pedidoExistente.getStatus() == PedidoStatus.ENTREGUE) {
+        if ( pedidoExistente.getStatus() == PedidoStatus.ENTREGUE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
                 "Pedido não pode ser atualizado. Status atual: " + pedidoExistente.getStatus());
         }
@@ -176,14 +175,14 @@ public class PedidoService {
     }
 
     public boolean isValidStatusTransition(PedidoStatus atual, PedidoStatus novo) {
-        if (atual == PedidoStatus.CANCELADO || atual == PedidoStatus.ENTREGUE) {
+        if (atual == PedidoStatus.ENTREGUE) {
             return false;
         }
-
+    
         if (novo == PedidoStatus.PENDENTE && atual != PedidoStatus.PENDENTE) {
             return false;
         }
-
+    
         return true;
     }
 }

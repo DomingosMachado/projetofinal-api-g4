@@ -54,6 +54,7 @@ public class EmailService {
         }
     }
 
+
     private SimpleMailMessage criarMensagem(String email, String nome, String assunto, String mensagem) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
@@ -61,5 +62,26 @@ public class EmailService {
         message.setSubject(assunto);
         message.setText("Olá " + nome + ",\n\n" + mensagem);
         return message;
+    }
+
+    // EXTRA DOMINGOS MACHADO
+    public void enviarEmailDevolucao(String email, String nome, Long numeroPedido, String status) {
+        try {
+            String assunto = "Solicitação de Devolução - Pedido #" + numeroPedido;
+            String mensagem = String.format("""
+                Sua solicitação de devolução para o pedido #%d foi recebida com sucesso!
+
+                """, numeroPedido, status);
+    
+            SimpleMailMessage message = criarMensagem(email, nome, assunto, mensagem);
+            mailSender.send(message);
+            System.out.println("Email de devolução enviado para: " + email);
+        } catch (MailException e) {
+            System.out.println("Erro ao enviar email de devolução para " + email + ": " + e.getMessage());
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Erro ao enviar email de confirmação de devolução"
+            );
+        }
     }
 }
