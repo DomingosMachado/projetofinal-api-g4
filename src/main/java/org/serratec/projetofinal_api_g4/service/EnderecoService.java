@@ -62,4 +62,41 @@ public class EnderecoService {
 
         return new EnderecoDTO(endereco);
     }
+
+    public EnderecoDTO atualizar(Long id, Endereco entity) {
+        Cliente cliente = clienteRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+
+        Endereco endereco = cliente.getEndereco();
+        if (endereco == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Endereço não encontrado para o cliente");
+        }
+
+        // Atualiza os campos do endereço
+        endereco.setCep(entity.getCep());
+        endereco.setLogradouro(entity.getLogradouro());
+        endereco.setComplemento(entity.getComplemento());
+        endereco.setBairro(entity.getBairro());
+        endereco.setCidade(entity.getCidade());
+        endereco.setUf(entity.getUf());
+        endereco.setIbge(entity.getIbge());
+
+        clienteRepository.save(cliente);
+
+        return new EnderecoDTO(endereco);
+    }
+
+    public void deletar(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+
+        Endereco endereco = cliente.getEndereco();
+        if (endereco == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Endereço não encontrado para o cliente");
+        }
+
+        // Remove o endereço do cliente
+        cliente.setEndereco(null);
+        clienteRepository.save(cliente);
+    }
 }

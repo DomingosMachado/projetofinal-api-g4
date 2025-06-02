@@ -156,6 +156,9 @@ public class PedidoService {
                     HttpStatus.NOT_FOUND, "Pedido não encontrado"
                 ));
     }
+    public List<Pedido> buscarPorClienteId(Long clienteId) {
+    return pedidoRepository.findByClienteId(clienteId);
+}
 
     @Transactional
     public void deletar(Long id) {

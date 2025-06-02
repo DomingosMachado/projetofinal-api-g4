@@ -6,6 +6,7 @@ import org.serratec.projetofinal_api_g4.dto.ProdutoDTO;
 import org.serratec.projetofinal_api_g4.service.ProdutoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -28,6 +29,7 @@ public class ProdutoController {
     }
 
     @Operation(summary = "Listar todos os produtos")
+    @PreAuthorize("hasRole('CLIENTE') or hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @GetMapping
     public ResponseEntity<List<ProdutoDTO>> listar() {
         return ResponseEntity.ok(produtoService.listarTodos());
@@ -35,9 +37,10 @@ public class ProdutoController {
 
     @Operation(summary = "Buscar produto por ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Produto encontrado"),
-        @ApiResponse(responseCode = "404", description = "Produto não encontrado")
+            @ApiResponse(responseCode = "200", description = "Produto encontrado"),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @GetMapping("/{id}")
     public ResponseEntity<ProdutoDTO> buscarPorId(@PathVariable Long id) {
         try {
@@ -49,10 +52,12 @@ public class ProdutoController {
     }
 
     @Operation(summary = "Inserir novo produto")
+
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Produto criado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "201", description = "Produto criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @PostMapping
     public ResponseEntity<ProdutoDTO> inserir(@Valid @RequestBody ProdutoDTO produtoDTO) {
         try {
@@ -65,10 +70,11 @@ public class ProdutoController {
 
     @Operation(summary = "Atualizar produto")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Produto atualizado com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Produto não encontrado"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "200", description = "Produto atualizado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @PutMapping("/{id}")
     public ResponseEntity<ProdutoDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ProdutoDTO produtoDTO) {
         try {
@@ -85,9 +91,10 @@ public class ProdutoController {
 
     @Operation(summary = "Deletar produto")
     @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Produto deletado com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Produto não encontrado")
+            @ApiResponse(responseCode = "204", description = "Produto deletado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         try {

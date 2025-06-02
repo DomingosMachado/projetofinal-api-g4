@@ -8,6 +8,7 @@ import org.serratec.projetofinal_api_g4.service.FuncionarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/funcionarios")
+@PreAuthorize("hasRole('ADMIN')") 
 @Tag(name = "Funcionários", description = "API de gerenciamento de funcionários")
 public class FuncionarioController {
 
@@ -29,6 +31,7 @@ public class FuncionarioController {
         @ApiResponse(responseCode = "201", description = "Funcionário criado com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
+    
     @PostMapping
     public ResponseEntity<FuncionarioDTO> cadastrarFuncionario(@Valid @RequestBody FuncionarioDTO funcionarioDTO) {
         try {

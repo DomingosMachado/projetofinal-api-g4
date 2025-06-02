@@ -28,9 +28,9 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
-   @Operation(summary = "Listar todos os clientes")
+    @Operation(summary = "Listar todos os clientes")
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
     public ResponseEntity<List<ClienteDTO>> listar() {
         return ResponseEntity.ok(clienteService.listar());
     }
@@ -41,7 +41,7 @@ public class ClienteController {
         @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
     @GetMapping("/{id}")
-    @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
+     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR') or @securityService.isOwner(#id)")
     public ResponseEntity<ClienteDTO> buscar(@PathVariable Long id) {
         ClienteDTO cliente = clienteService.buscarPorId(id);
         return ResponseEntity.ok(cliente);
@@ -52,6 +52,7 @@ public class ClienteController {
         @ApiResponse(responseCode = "201", description = "Cliente criado com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
+     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
     @PostMapping
     public ResponseEntity<ClienteDTO> inserir(@Valid @RequestBody ClienteDTO clienteDTO) {
         ClienteDTO cliente = clienteService.inserir(clienteDTO);
@@ -65,7 +66,7 @@ public class ClienteController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @PutMapping("/{id}")
-    @PreAuthorize("#id == authentication.principal.id or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR') or @securityService.isOwner(#id)")
     public ResponseEntity<ClienteDTO> atualizar(
             @Valid @RequestBody ClienteDTO clienteDTO,
             @PathVariable Long id) {
@@ -79,7 +80,7 @@ public class ClienteController {
         @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         clienteService.deletar(id);
         return ResponseEntity.noContent().build();

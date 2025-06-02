@@ -4,6 +4,7 @@ import org.serratec.projetofinal_api_g4.dto.CategoriaDTO;
 import org.serratec.projetofinal_api_g4.service.CategoriaService;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +33,7 @@ public class CategoriaController {
         @ApiResponse(responseCode = "201", description = "Categoria criada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @PostMapping
     public ResponseEntity<CategoriaDTO> inserir(@Valid @RequestBody CategoriaDTO categoriaDTO) {
         CategoriaDTO novaCategoria = categoriaService.inserir(categoriaDTO);
@@ -44,6 +46,7 @@ public class CategoriaController {
         @ApiResponse(responseCode = "404", description = "Categoria não encontrada"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @PutMapping("/{id}")
     public ResponseEntity<CategoriaDTO> atualizar(@PathVariable Long id, @Valid @RequestBody CategoriaDTO categoriaDTO) {
         CategoriaDTO categoriaAtualizada = categoriaService.atualizar(categoriaDTO, id);
@@ -51,6 +54,7 @@ public class CategoriaController {
     }
 
     @Operation(summary = "Listar todas as categorias")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA', 'VENDEDOR')")
     @GetMapping
     public ResponseEntity<List<CategoriaDTO>> listar() {
         List<CategoriaDTO> categorias = categoriaService.listarTodas();
@@ -62,6 +66,7 @@ public class CategoriaController {
         @ApiResponse(responseCode = "200", description = "Categoria encontrada"),
         @ApiResponse(responseCode = "404", description = "Categoria não encontrada")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA', 'VENDEDOR')")
     @GetMapping("/{id}")
     public ResponseEntity<CategoriaDTO> buscarPorId(@PathVariable Long id) {
         CategoriaDTO categoria = categoriaService.buscarPorId(id);
@@ -73,6 +78,7 @@ public class CategoriaController {
         @ApiResponse(responseCode = "204", description = "Categoria deletada com sucesso"),
         @ApiResponse(responseCode = "404", description = "Categoria não encontrada")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         categoriaService.deletar(id);

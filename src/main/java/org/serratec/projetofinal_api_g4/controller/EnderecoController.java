@@ -5,12 +5,14 @@ import org.serratec.projetofinal_api_g4.service.EnderecoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/enderecos")
+@PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN', 'VENDEDOR')")
 public class EnderecoController {
 
     @Autowired
@@ -33,5 +35,19 @@ public class EnderecoController {
         
         EnderecoDTO enderecoSalvo = enderecoService.inserir(enderecoDTO.toEntity(), clienteId);
         return ResponseEntity.status(HttpStatus.CREATED).body(enderecoSalvo);
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<EnderecoDTO> atualizarEndereco(
+            @PathVariable Long id,
+            @Valid @RequestBody EnderecoDTO enderecoDTO) {
+        
+        EnderecoDTO enderecoAtualizado = enderecoService.atualizar(id, enderecoDTO.toEntity());
+        return ResponseEntity.ok(enderecoAtualizado);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarEndereco(@PathVariable Long id) {
+        enderecoService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 }
