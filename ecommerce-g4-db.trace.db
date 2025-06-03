@@ -647,3 +647,6 @@ ORDER BY p.data_pedido DESC [42102-232]
 2025-06-02 20:19:49.558478-03:00 jdbc[13]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * [*]FROMPEDIDO_PRODUTO"; SQL statement:
 SELECT * FROMPEDIDO_PRODUTO [42000-232]
+2025-06-02 22:38:11.344338-03:00 jdbc[138]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PEDIDO" not found; SQL statement:
+SELECT * FROM PEDIDO [42102-232]

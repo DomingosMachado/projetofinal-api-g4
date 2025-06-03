@@ -83,7 +83,13 @@ public class Pedido {
     }
 
     public void setDataAtualizacao(LocalDateTime now) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setDataAtualizacao'");
+        
+        if (now != null) {
+            this.dataPedido = now;
+         }
+            
+        
+
     }
+
 }
