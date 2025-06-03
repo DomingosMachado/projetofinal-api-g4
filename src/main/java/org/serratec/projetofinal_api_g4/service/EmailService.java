@@ -95,4 +95,22 @@ public class EmailService {
         }
 
     }
+<<<<<<< HEAD
 }
+=======
+
+
+    public void enviarEmailDevolucao(String email, String nome, Long pedidoId, String status) {
+        try {
+            SimpleMailMessage message = criarMensagem(email, nome, "Solicitação de Devolução",
+                    "Olá " + nome + ",\n\nSua solicitação de devolução do pedido " + pedidoId +
+                            " foi recebida com o status: " + status + ".\n\nAguarde nosso contato para mais informações.");
+            mailSender.send(message);
+            System.out.println("Email de devolução enviado para: " + email);
+        } catch (MailException e) {
+            System.out.println("Erro ao enviar email de devolução para " + email + ": " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao enviar email de devolução");
+        }
+    }
+}
+>>>>>>> origin/DomingosMAchado

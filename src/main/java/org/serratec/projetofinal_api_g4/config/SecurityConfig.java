@@ -79,7 +79,9 @@ public class SecurityConfig {
                     "/webjars/**",
                     "/configuration/**",
                     "/h2-console/**",
-                    "/auth/**"
+                    "/auth/**",
+                    "/api/produtos",
+                    "/api/produtos/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

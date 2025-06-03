@@ -7,7 +7,6 @@ public enum PedidoStatus {
     ENVIADO("Enviado"),
     ENTREGUE("Entregue"),
     CANCELADO("Cancelado");
-
     private final String descricao;
 
     PedidoStatus(String descricao) {

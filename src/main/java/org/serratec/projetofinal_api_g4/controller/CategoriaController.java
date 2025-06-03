@@ -36,8 +36,12 @@ public class CategoriaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @PostMapping
     public ResponseEntity<CategoriaDTO> inserir(@Valid @RequestBody CategoriaDTO categoriaDTO) {
-        CategoriaDTO novaCategoria = categoriaService.inserir(categoriaDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novaCategoria);
+        try {
+            CategoriaDTO novaCategoria = categoriaService.inserir(categoriaDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(novaCategoria);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Operation(summary = "Atualizar categoria existente")
@@ -49,8 +53,15 @@ public class CategoriaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @PutMapping("/{id}")
     public ResponseEntity<CategoriaDTO> atualizar(@PathVariable Long id, @Valid @RequestBody CategoriaDTO categoriaDTO) {
-        CategoriaDTO categoriaAtualizada = categoriaService.atualizar(categoriaDTO, id);
-        return ResponseEntity.ok(categoriaAtualizada);
+        try {
+            CategoriaDTO categoriaAtualizada = categoriaService.atualizar(categoriaDTO, id);
+            return ResponseEntity.ok(categoriaAtualizada);
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("não encontrada")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Operation(summary = "Listar todas as categorias")
@@ -69,8 +80,12 @@ public class CategoriaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA', 'VENDEDOR')")
     @GetMapping("/{id}")
     public ResponseEntity<CategoriaDTO> buscarPorId(@PathVariable Long id) {
-        CategoriaDTO categoria = categoriaService.buscarPorId(id);
-        return ResponseEntity.ok(categoria);
+        try {
+            CategoriaDTO categoria = categoriaService.buscarPorId(id);
+            return ResponseEntity.ok(categoria);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Deletar categoria")
@@ -81,7 +96,11 @@ public class CategoriaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        categoriaService.deletar(id);
-        return ResponseEntity.noContent().build();
+        try {
+            categoriaService.deletar(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

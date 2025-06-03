@@ -54,6 +54,11 @@ public class Produto {
     @NotNull(message = "A categoria do produto é obrigatória")
     private Categoria categoria;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fornecedor_id",nullable = false)
+    @NotNull(message = "O fornecedor do produto é obrigatório")
+    private Fornecedor fornecedor;
+
     @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PedidoProduto> pedidoProdutos = new ArrayList<>();
 
