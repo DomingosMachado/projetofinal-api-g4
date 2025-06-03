@@ -91,17 +91,6 @@ public class Pedido {
     }
 
     public void setDataAtualizacao(LocalDateTime now) {
-<<<<<<< HEAD
-        
-        if (now != null) {
-            this.dataPedido = now;
-         }
-            
-        
-
-    }
-
-=======
 
         if (now != null) {
             this.dataPedido = now;
@@ -119,5 +108,4 @@ public class Pedido {
         }
     }
 
->>>>>>> origin/DomingosMAchado
 }

@@ -95,9 +95,6 @@ public class EmailService {
         }
 
     }
-<<<<<<< HEAD
-}
-=======
 
 
     public void enviarEmailDevolucao(String email, String nome, Long pedidoId, String status) {
@@ -113,4 +110,3 @@ public class EmailService {
         }
     }
 }
->>>>>>> origin/DomingosMAchado

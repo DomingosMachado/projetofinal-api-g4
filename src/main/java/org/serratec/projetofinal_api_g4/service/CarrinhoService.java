@@ -38,12 +38,6 @@ public class CarrinhoService {
         @Autowired
         private ProdutoRepository produtoRepository;
 
-<<<<<<< HEAD
-        @Autowired
-        private PedidoProdutoService pedidoProdutoService;
-=======
-
->>>>>>> origin/DomingosMAchado
 
         @Autowired
         private PedidoService pedidoService;
@@ -147,8 +141,4 @@ public PedidoDTO finalizarCarrinho(Long clienteId) {
 
     return new PedidoDTO(pedido);
 }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/DomingosMAchado

@@ -63,11 +63,7 @@ public class PedidoController {
 
     @Operation(summary = "Listar pedidos de um cliente")
     @GetMapping("/cliente/{id}")
-<<<<<<< HEAD
-    @PreAuthorize("(@securityConfig.isOwner(#id) and hasRole('CLIENTE')) or hasAnyRole('ADMIN', 'VENDEDOR')")
-=======
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR') or (hasRole('CLIENTE') and @securityConfig.isOwner(#id))")
->>>>>>> origin/DomingosMAchado
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedidos do cliente encontrados"),
             @ApiResponse(responseCode = "404", description = "Cliente não encontrado"),
@@ -126,44 +122,18 @@ public class PedidoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedido cancelado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
-<<<<<<< HEAD
-            @ApiResponse(responseCode = "400", description = "Pedido não pode ser cancelado"),
-            @ApiResponse(responseCode = "403", description = "Não autorizado para cancelar este pedido")
-    })
-    @PreAuthorize("(@securityConfig.isPedidoOwner(#id) and hasRole('CLIENTE')) or hasAnyRole('ADMIN', 'VENDEDOR')")
-    @PatchMapping("/{id}/cancelar")
-    public ResponseEntity<PedidoDTO> cancelarPedido(@PathVariable Long id) {
-        try {
-            Optional<Pedido> pedidoOpt = pedidoService.buscarPorId(id);
-            if (!pedidoOpt.isPresent()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            Pedido pedido = pedidoOpt.get();
-
-            // Verificar se o pedido pode ser cancelado
-            if (pedido.getStatus() != PedidoStatus.PENDENTE) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Pedido só pode ser cancelado quando está PENDENTE");
-            }
-
-=======
             @ApiResponse(responseCode = "400", description = "Pedido não pode ser cancelado")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR') or hasRole('CLIENTE')")
     @PatchMapping("/{id}/cancelar")
     public ResponseEntity<PedidoDTO> cancelarPedido(@PathVariable Long id) {
         try {
->>>>>>> origin/DomingosMAchado
             PedidoDTO pedidoCancelado = pedidoService.cancelarPedido(id);
             return ResponseEntity.ok(pedidoCancelado);
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
-<<<<<<< HEAD
-=======
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
->>>>>>> origin/DomingosMAchado
         }
     }
 
