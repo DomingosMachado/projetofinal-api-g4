@@ -27,40 +27,58 @@ public class ProdutoService {
 
     @Transactional
     public ProdutoDTO inserir(ProdutoDTO dto) {
-        Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
-
-        Produto produto = new Produto();
-        produto.setNome(dto.getNome());
-        produto.setDescricao(dto.getDescricao());
-        produto.setPreco(dto.getPreco());
-        produto.setPrecoAtual(dto.getPreco()); // Sincronizar preço atual
-        produto.setQuantidade(dto.getQuantidade());
-        produto.setEstoque(dto.getQuantidade()); // Sincronizar estoque inicial com quantidade
-        produto.setCategoria(categoria);
-
-        produto = produtoRepository.save(produto);
-        return new ProdutoDTO(produto);
+        try {
+            System.out.println("Iniciando inserção de produto: " + dto.getNome());
+            
+            if (dto.getCategoria() == null || dto.getCategoria().getId() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria é obrigatória");
+            }
+            
+            Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
+            
+            System.out.println("Categoria encontrada: " + categoria.getNome());            Produto produto = new Produto();
+            produto.setNome(dto.getNome());
+            produto.setDescricao(dto.getDescricao());
+            produto.setPreco(dto.getPreco());
+            produto.setPrecoAtual(dto.getPrecoAtual() != null ? dto.getPrecoAtual() : dto.getPreco());
+            produto.setEstoque(dto.getEstoque() != null ? dto.getEstoque() : dto.getQuantidade());
+            produto.setQuantidade(dto.getQuantidade());
+            produto.setCategoria(categoria);        
+            
+            produto.setFornecedor(null); // Deixar nulo por enquanto
+            
+            System.out.println("Salvando produto...");
+            produto = produtoRepository.save(produto);
+            System.out.println("Produto salvo com ID: " + produto.getId());
+            
+            return new ProdutoDTO(produto);
+        } catch (Exception e) {
+            System.err.println("Erro ao inserir produto: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Transactional
     public ProdutoDTO atualizar(Long id, ProdutoDTO dto) {
         Produto produto = produtoRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
-
-        Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
+                HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));        Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
             .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
 
         produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
         produto.setPreco(dto.getPreco());
-        produto.setPrecoAtual(dto.getPreco()); // Atualizar preço atual também
+        produto.setPrecoAtual(dto.getPrecoAtual() != null ? dto.getPrecoAtual() : dto.getPreco());
+        produto.setEstoque(dto.getEstoque() != null ? dto.getEstoque() : dto.getQuantidade());
         produto.setQuantidade(dto.getQuantidade());
-        produto.setEstoque(dto.getQuantidade()); // Atualizar estoque também
         produto.setCategoria(categoria);
+        
+        // Fornecedor continua null (não alteramos por enquanto)
+        // produto.setFornecedor(null); // Manter como está
 
         produto = produtoRepository.save(produto);
         return new ProdutoDTO(produto);
@@ -96,5 +114,28 @@ public class ProdutoService {
         }
 
         produtoRepository.delete(produto);
+    }    public List<ProdutoDTO> buscarPorCategoria(Long categoriaId) {
+        // Verifica se a categoria existe
+        if (!categoriaRepository.existsById(categoriaId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                "Categoria não encontrada com id: " + categoriaId);
+        }
+        
+        List<Produto> produtos = produtoRepository.findByCategoriaId(categoriaId);
+        return produtos.stream()
+                .map(ProdutoDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProdutoDTO> buscarPorNome(String nome) {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Nome para busca não pode ser vazio");
+        }
+        
+        List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCase(nome.trim());
+        return produtos.stream()
+                .map(ProdutoDTO::new)
+                .collect(Collectors.toList());
     }
 }
