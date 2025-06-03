@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
+import org.serratec.projetofinal_api_g4.enums.TipoPedido;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -43,6 +44,11 @@ public class Pedido {
     @Column(nullable = false, length = 20)
     @NotNull(message = "O status do pedido é obrigatório")
     private PedidoStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_pedido", nullable = false)
+    private TipoPedido tipoPedido;
+    
 
     public void adicionarProduto(PedidoProduto pedidoProduto) {
         if (pedidoProduto != null) {
@@ -92,4 +98,13 @@ public class Pedido {
 
     }
 
+    //Método para garantir que o cliente ou o forneccedor estejam preenchidos
+    public void validarClienteOuFornecedor() {
+        if (cliente == null && tipoPedido == TipoPedido.CLIENTE) {
+            throw new IllegalArgumentException("O cliente é obrigatório para pedidos do tipo CLIENTE");
+        }
+        if (cliente != null && tipoPedido == TipoPedido.FORNECEDOR) {
+            throw new IllegalArgumentException("O fornecedor não deve ser preenchido para pedidos do tipo FORNECEDOR");
+        }
+    }
 }

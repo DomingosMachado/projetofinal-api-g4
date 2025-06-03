@@ -39,9 +39,6 @@ public class CarrinhoService {
         private ProdutoRepository produtoRepository;
 
         @Autowired
-        private PedidoProdutoService pedidoProdutoService;
-
-        @Autowired
         private PedidoService pedidoService;
 
         @Transactional
