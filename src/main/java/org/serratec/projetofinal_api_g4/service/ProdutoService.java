@@ -65,17 +65,20 @@ public class ProdutoService {
     public ProdutoDTO atualizar(Long id, ProdutoDTO dto) {
         Produto produto = produtoRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));
-
-        Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
+                HttpStatus.NOT_FOUND, "Produto não encontrado com id: " + id));        Categoria categoria = categoriaRepository.findById(dto.getCategoria().getId())
             .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));        produto.setNome(dto.getNome());
+                HttpStatus.NOT_FOUND, "Categoria não encontrada com id: " + dto.getCategoria().getId()));
+
+        produto.setNome(dto.getNome());
         produto.setDescricao(dto.getDescricao());
         produto.setPreco(dto.getPreco());
         produto.setPrecoAtual(dto.getPrecoAtual() != null ? dto.getPrecoAtual() : dto.getPreco());
         produto.setEstoque(dto.getEstoque() != null ? dto.getEstoque() : dto.getQuantidade());
         produto.setQuantidade(dto.getQuantidade());
         produto.setCategoria(categoria);
+        
+        // Fornecedor continua null (não alteramos por enquanto)
+        // produto.setFornecedor(null); // Manter como está
 
         produto = produtoRepository.save(produto);
         return new ProdutoDTO(produto);
