@@ -21,8 +21,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AvaliacaoDTO {
 
-    
-    
     private Long id;
 
     @JsonProperty("nota")
