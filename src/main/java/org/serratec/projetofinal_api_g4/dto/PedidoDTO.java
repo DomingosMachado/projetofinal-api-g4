@@ -26,6 +26,7 @@ public class PedidoDTO {
     private PedidoStatus status;
     private BigDecimal valorTotal;
 
+
     // Construtores
     public PedidoDTO() {}
 

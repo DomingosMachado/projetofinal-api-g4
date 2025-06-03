@@ -78,7 +78,7 @@ public class ClienteController {
         // Envia e-mail de atualização
         emailService.enviarEmailAtualizacao(
             clienteAtualizado.getEmail(), 
-            clienteAtualizado.getNome()
+            clienteAtualizado.getNome(), null
         );
         
         return ResponseEntity.ok(clienteAtualizado);

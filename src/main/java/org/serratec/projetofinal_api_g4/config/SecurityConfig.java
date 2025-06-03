@@ -103,7 +103,7 @@ public class SecurityConfig {
 
     public boolean isOwner(Long id) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
+        if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
     

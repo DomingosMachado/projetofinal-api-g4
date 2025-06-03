@@ -1,5 +1,7 @@
 package org.serratec.projetofinal_api_g4.service;
 
+import org.serratec.projetofinal_api_g4.domain.Pedido;
+import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
@@ -30,7 +32,7 @@ public class EmailService {
         }
     }
 
-    public void enviarEmailAtualizacao(String email, String nome) {
+    public void enviarEmailAtualizacao(String email, String nome, String string) {
         try {
             SimpleMailMessage message = criarMensagem(email, nome, "Atualização de Cadastro", 
                 "Seus dados foram atualizados com sucesso!");
@@ -61,5 +63,30 @@ public class EmailService {
         message.setSubject(assunto);
         message.setText("Olá " + nome + ",\n\n" + mensagem);
         return message;
+    }
+
+    public void enviarEmailAtualizacaoStatus(String email, String nome, String string, PedidoStatus novoStatus) {
+        try {
+            SimpleMailMessage message = criarMensagem(email, nome, "Atualização de Status do Pedido", 
+                "O status do seu pedido foi atualizado para: " + novoStatus);
+            mailSender.send(message);
+            System.out.println("Email de atualização de status enviado para: " + email);
+        } catch (MailException e) {
+            System.out.println("Erro ao enviar email de atualização de status para " + email + ": " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao enviar email de atualização de status");
+        }
+    }
+
+    public void enviarEmailCancelamento(String email, Pedido pedido) {
+        try {
+            SimpleMailMessage message = criarMensagem(email, pedido.getCliente().getNome(), "Cancelamento de Pedido", 
+                "Seu pedido número " + pedido.getDataPedido() + " foi cancelado.");
+            mailSender.send(message);
+            System.out.println("Email de cancelamento enviado para: " + email);
+        } catch (MailException e) {
+            System.out.println("Erro ao enviar email de cancelamento para " + email + ": " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao enviar email de cancelamento");
+        }
+        
     }
 }
