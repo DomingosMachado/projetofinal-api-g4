@@ -24,30 +24,47 @@ public class EnderecoController {
 
     @GetMapping("/cep/{cep}")
     public ResponseEntity<EnderecoDTO> buscarPorCep(@PathVariable String cep) {
-        EnderecoDTO endereco = enderecoService.buscar(cep);
-        return ResponseEntity.ok(endereco);
+        try {
+            EnderecoDTO endereco = enderecoService.buscar(cep);
+            return ResponseEntity.ok(endereco);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/cliente/{clienteId}")
     public ResponseEntity<EnderecoDTO> inserirEndereco(
             @PathVariable Long clienteId,
             @Valid @RequestBody EnderecoDTO enderecoDTO) {
-        
-        EnderecoDTO enderecoSalvo = enderecoService.inserir(enderecoDTO.toEntity(), clienteId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(enderecoSalvo);
+        try {
+            EnderecoDTO enderecoSalvo = enderecoService.inserir(enderecoDTO.toEntity(), clienteId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(enderecoSalvo);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
     @PutMapping("/{id}")
     public ResponseEntity<EnderecoDTO> atualizarEndereco(
             @PathVariable Long id,
             @Valid @RequestBody EnderecoDTO enderecoDTO) {
-        
-        EnderecoDTO enderecoAtualizado = enderecoService.atualizar(id, enderecoDTO.toEntity());
-        return ResponseEntity.ok(enderecoAtualizado);
+        try {
+            EnderecoDTO enderecoAtualizado = enderecoService.atualizar(id, enderecoDTO.toEntity());
+            return ResponseEntity.ok(enderecoAtualizado);
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("não encontrado")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarEndereco(@PathVariable Long id) {
-        enderecoService.deletar(id);
-        return ResponseEntity.noContent().build();
+        try {
+            enderecoService.deletar(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

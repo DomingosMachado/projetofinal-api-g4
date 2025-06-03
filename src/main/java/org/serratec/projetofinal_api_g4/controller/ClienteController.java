@@ -47,8 +47,12 @@ public class ClienteController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR') or @securityConfig.isOwner(#id)")
     public ResponseEntity<ClienteDTO> buscar(@PathVariable Long id) {
-        ClienteDTO cliente = clienteService.buscarPorId(id);
-        return ResponseEntity.ok(cliente);
+        try {
+            ClienteDTO cliente = clienteService.buscarPorId(id);
+            return ResponseEntity.ok(cliente);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(summary = "Cadastrar novo cliente")
@@ -58,8 +62,12 @@ public class ClienteController {
     })
     @PostMapping
     public ResponseEntity<ClienteDTO> inserir(@Valid @RequestBody ClienteDTO clienteDTO) {
-        ClienteDTO clienteCriado = clienteService.inserir(clienteDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(clienteCriado);
+        try {
+            ClienteDTO clienteCriado = clienteService.inserir(clienteDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(clienteCriado);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Operation(summary = "Atualizar cliente existente")
@@ -73,15 +81,19 @@ public class ClienteController {
     public ResponseEntity<ClienteDTO> atualizar(
             @Valid @RequestBody ClienteDTO clienteDTO,
             @PathVariable Long id) {
-        ClienteDTO clienteAtualizado = clienteService.atualizar(id, clienteDTO);
-        
-        // Envia e-mail de atualização
-        emailService.enviarEmailAtualizacao(
-            clienteAtualizado.getEmail(), 
-            clienteAtualizado.getNome()
-        );
-        
-        return ResponseEntity.ok(clienteAtualizado);
+        try {
+            ClienteDTO clienteAtualizado = clienteService.atualizar(id, clienteDTO);
+            emailService.enviarEmailAtualizacao(
+                clienteAtualizado.getEmail(), 
+                clienteAtualizado.getNome()
+            );
+            return ResponseEntity.ok(clienteAtualizado);
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("não encontrado")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Operation(summary = "Remover cliente")
@@ -92,7 +104,11 @@ public class ClienteController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        clienteService.deletar(id);
-        return ResponseEntity.noContent().build();
+        try {
+            clienteService.deletar(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

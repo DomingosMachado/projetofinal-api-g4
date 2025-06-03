@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,7 +43,7 @@ public class ProdutoController {
         try {
             ProdutoDTO produto = produtoService.buscarPorId(id);
             return ResponseEntity.ok(produto);
-        } catch (ResponseStatusException e) {
+        } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
     }
@@ -61,7 +60,7 @@ public class ProdutoController {
         try {
             ProdutoDTO novo = produtoService.inserir(produtoDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(novo);
-        } catch (ResponseStatusException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -78,12 +77,11 @@ public class ProdutoController {
         try {
             ProdutoDTO atualizado = produtoService.atualizar(id, produtoDTO);
             return ResponseEntity.ok(atualizado);
-        } catch (ResponseStatusException e) {
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("não encontrado")) {
                 return ResponseEntity.notFound().build();
-            } else {
-                return ResponseEntity.badRequest().build();
             }
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -98,7 +96,7 @@ public class ProdutoController {
         try {
             produtoService.deletar(id);
             return ResponseEntity.noContent().build();
-        } catch (ResponseStatusException e) {
+        } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
     }

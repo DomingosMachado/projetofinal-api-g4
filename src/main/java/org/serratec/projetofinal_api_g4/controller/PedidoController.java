@@ -52,11 +52,15 @@ public class PedidoController {
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
     @GetMapping("/{id}")
     public ResponseEntity<PedidoDTO> buscarPorId(@PathVariable Long id) {
-        Optional<Pedido> pedido = pedidoService.buscarPorId(id);
-        if (pedido.isPresent()) {
-            return ResponseEntity.ok(new PedidoDTO(pedido.get()));
+        try {
+            Optional<Pedido> pedido = pedidoService.buscarPorId(id);
+            if (pedido.isPresent()) {
+                return ResponseEntity.ok(new PedidoDTO(pedido.get()));
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 
     @Operation(summary = "Listar pedidos de um cliente")
@@ -104,8 +108,12 @@ public class PedidoController {
     @PreAuthorize("hasRole('CLIENTE') or hasAnyRole('ADMIN', 'VENDEDOR')")
     @PostMapping
     public ResponseEntity<PedidoDTO> criar(@Valid @RequestBody PedidoDTO pedidoDTO) {
-        PedidoDTO novoPedido = pedidoService.inserir(pedidoDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoPedido);
+        try {
+            PedidoDTO novoPedido = pedidoService.inserir(pedidoDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(novoPedido);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Operation(summary = "Atualizar status do pedido")
@@ -117,28 +125,28 @@ public class PedidoController {
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<PedidoDTO> atualizarStatus(@PathVariable Long id, @RequestParam String status) {
-        Optional<Pedido> pedidoOpt = pedidoService.buscarPorId(id);
-        if (!pedidoOpt.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        PedidoStatus novoStatus;
         try {
-            novoStatus = PedidoStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
+            Optional<Pedido> pedidoOpt = pedidoService.buscarPorId(id);
+            if (!pedidoOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            PedidoStatus novoStatus;
+            try {
+                novoStatus = PedidoStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().build();
+            }
+            Pedido pedido = pedidoOpt.get();
+            PedidoStatus statusAtual = pedido.getStatus();
+            if (!pedidoService.isValidStatusTransition(statusAtual, novoStatus)) {
+                return ResponseEntity.badRequest().build();
+            }
+            pedido.setStatus(novoStatus);
+            Pedido pedidoAtualizado = pedidoService.salvar(pedido);
+            return ResponseEntity.ok(new PedidoDTO(pedidoAtualizado));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
-
-        Pedido pedido = pedidoOpt.get();
-        PedidoStatus statusAtual = pedido.getStatus();
-        
-        if (!pedidoService.isValidStatusTransition(statusAtual, novoStatus)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        pedido.setStatus(novoStatus);
-        Pedido pedidoAtualizado = pedidoService.salvar(pedido);
-        return ResponseEntity.ok(new PedidoDTO(pedidoAtualizado));
     }
 
     @Operation(summary = "Deletar pedido")
@@ -150,7 +158,11 @@ public class PedidoController {
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        pedidoService.deletar(id);
-        return ResponseEntity.noContent().build();
+        try {
+            pedidoService.deletar(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

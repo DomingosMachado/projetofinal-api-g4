@@ -68,11 +68,10 @@ public class EmailService {
     public void enviarEmailDevolucao(String email, String nome, Long numeroPedido, String status) {
         try {
             String assunto = "Solicitação de Devolução - Pedido #" + numeroPedido;
-            String mensagem = String.format("""
-                Sua solicitação de devolução para o pedido #%d foi recebida com sucesso!
-
-                """, numeroPedido, status);
-    
+            String mensagem = String.format(
+                "Sua solicitação de devolução para o pedido #%d foi recebida com sucesso!\n\nStatus: %s",
+                numeroPedido, status
+            );
             SimpleMailMessage message = criarMensagem(email, nome, assunto, mensagem);
             mailSender.send(message);
             System.out.println("Email de devolução enviado para: " + email);
