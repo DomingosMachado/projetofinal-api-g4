@@ -94,15 +94,12 @@ public class PedidoController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             
-            // Verificar se é cliente e se está tentando criar pedido para ele mesmo
             if (auth != null && auth.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_CLIENTE"))) {
                 
-                // Extrair ID do usuário do token JWT (formato: "id:nome:email")
                 String[] userInfo = auth.getName().split(":");
                 Long userId = Long.parseLong(userInfo[0]);
                 
-                // Verificar se o cliente está criando pedido para ele mesmo
                 if (pedidoDTO.getCliente() == null || !userId.equals(pedidoDTO.getCliente().getId())) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                 }
