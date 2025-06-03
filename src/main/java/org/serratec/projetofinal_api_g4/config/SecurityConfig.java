@@ -2,6 +2,7 @@ package org.serratec.projetofinal_api_g4.config;
 
 import org.serratec.projetofinal_api_g4.service.ClienteDetailsService;
 import org.serratec.projetofinal_api_g4.service.FuncionarioDetailsService;
+import org.serratec.projetofinal_api_g4.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +14,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -42,6 +42,9 @@ public class SecurityConfig {
 
     @Autowired
     private FuncionarioDetailsService funcionarioDetailsService;
+
+    @Autowired
+    private PedidoService pedidoService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -77,6 +80,7 @@ public class SecurityConfig {
                     "/configuration/**",
                     "/h2-console/**",
                     "/auth/**",
+                    "/api/produtos",
                     "/api/produtos/**"
                 ).permitAll()
                 .anyRequest().authenticated()
@@ -105,7 +109,7 @@ public class SecurityConfig {
 
     public boolean isOwner(Long id) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
+        if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
     
@@ -134,19 +138,46 @@ public class SecurityConfig {
         }
     }
 
-    public static Long getAuthenticatedUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
-            String username = auth.getName();
-            try {
-                // Extrai o ID do usuário do formato "id:nome:email"
-                return Long.parseLong(username.split(":")[0]);
-            } catch (Exception e) {
-                return null;
-            }
+     public boolean isPedidoOwner(Long pedidoId) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
         }
-        return null;
+
+        // Buscar pedido pelo id
+        var pedidoOpt = pedidoService.buscarPorId(pedidoId);
+        if (pedidoOpt.isEmpty()) {
+            return false;
+        }
+
+        var pedido = pedidoOpt.get();
+
+        // Extrair id do usuário autenticado do username (igual ao isOwner)
+        String username;
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof User) {
+            username = ((User) principal).getUsername();
+        } else if (principal instanceof String) {
+            username = (String) principal;
+        } else {
+            return false;
+        }
+
+        String[] parts = username.split(":");
+        if (parts.length < 1) {
+            return false;
+        }
+
+        Long userId;
+        try {
+            userId = Long.parseLong(parts[0]);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        // Verifica se o pedido pertence ao cliente autenticado
+        return pedido.getCliente() != null && userId.equals(pedido.getCliente().getId());
     }
+
 }
-
-

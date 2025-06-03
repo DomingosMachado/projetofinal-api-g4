@@ -83,7 +83,7 @@ public class FuncionarioService implements UserDetailsService {
 
         funcionario = funcionarioRepository.save(funcionario);
         
-        emailService.enviarEmailAtualizacao(funcionario.getEmail(), funcionario.getNome());
+        emailService.enviarEmailAtualizacao(funcionario.getEmail(), funcionario.getNome(), null);
         
         dto.setSenha(null);
         return dto;

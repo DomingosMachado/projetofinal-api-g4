@@ -39,6 +39,9 @@ public class Pedido {
     @NotNull(message = "A data do pedido é obrigatória")
     private LocalDateTime dataPedido;
 
+    @Column(name = "data_atualizacao")
+    private LocalDateTime dataAtualizacao;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @NotNull(message = "O status do pedido é obrigatório")
@@ -81,4 +84,15 @@ public class Pedido {
         }
 
     }
+
+    public void setDataAtualizacao(LocalDateTime now) {
+        
+        if (now != null) {
+            this.dataPedido = now;
+         }
+            
+        
+
+    }
+
 }
