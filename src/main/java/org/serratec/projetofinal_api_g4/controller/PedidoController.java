@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.serratec.projetofinal_api_g4.config.SecurityConfig;
 import org.serratec.projetofinal_api_g4.domain.Pedido;
 import org.serratec.projetofinal_api_g4.dto.PedidoDTO;
 import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
@@ -12,7 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+
+
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -56,18 +61,39 @@ public class PedidoController {
 
     @Operation(summary = "Listar pedidos de um cliente")
     @GetMapping("/cliente/{id}")
-    @PreAuthorize("@securityService.isOwner(#id) or hasAnyRole('ADMIN', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR', 'CLIENTE')")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Pedidos do cliente encontrados"),
-            @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
+        @ApiResponse(responseCode = "200", description = "Pedidos do cliente encontrados"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado"),
+        @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
     })
     public ResponseEntity<List<PedidoDTO>> listarPedidosDoCliente(@PathVariable Long id) {
+        // Se for CLIENTE, verifica se está acessando os próprios pedidos
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            boolean isCliente = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_CLIENTE"));
+            
+            if (isCliente) {
+                Long userId = SecurityConfig.getAuthenticatedUserId();
+                if (userId == null || !userId.equals(id)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+            }
+        }
+        
         List<Pedido> pedidos = pedidoService.buscarPorClienteId(id);
+        if (pedidos.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
         List<PedidoDTO> pedidosDTO = pedidos.stream()
                 .map(PedidoDTO::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(pedidosDTO);
     }
+
+    
 
     @Operation(summary = "Criar novo pedido")
     @ApiResponses({

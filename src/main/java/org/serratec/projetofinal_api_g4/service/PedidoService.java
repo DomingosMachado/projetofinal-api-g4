@@ -164,7 +164,7 @@ public class PedidoService {
             pedido.getStatus() == PedidoStatus.ENTREGUE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
                 "Pedido não pode ser excluído. Status atual: " + pedido.getStatus());
-        }
+        } 
 
         pedidoRepository.delete(pedido);
     }

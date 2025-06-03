@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -75,7 +76,8 @@ public class SecurityConfig {
                     "/webjars/**",
                     "/configuration/**",
                     "/h2-console/**",
-                    "/auth/**"
+                    "/auth/**",
+                    "/api/produtos/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
@@ -132,4 +134,19 @@ public class SecurityConfig {
         }
     }
 
+    public static Long getAuthenticatedUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            String username = auth.getName();
+            try {
+                // Extrai o ID do usuário do formato "id:nome:email"
+                return Long.parseLong(username.split(":")[0]);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
+    }
 }
+
+

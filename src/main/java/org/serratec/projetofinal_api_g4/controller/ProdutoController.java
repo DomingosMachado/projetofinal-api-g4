@@ -29,7 +29,6 @@ public class ProdutoController {
     }
 
     @Operation(summary = "Listar todos os produtos")
-    @PreAuthorize("hasRole('CLIENTE') or hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @GetMapping
     public ResponseEntity<List<ProdutoDTO>> listar() {
         return ResponseEntity.ok(produtoService.listarTodos());
@@ -40,7 +39,6 @@ public class ProdutoController {
             @ApiResponse(responseCode = "200", description = "Produto encontrado"),
             @ApiResponse(responseCode = "404", description = "Produto não encontrado")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @GetMapping("/{id}")
     public ResponseEntity<ProdutoDTO> buscarPorId(@PathVariable Long id) {
         try {
