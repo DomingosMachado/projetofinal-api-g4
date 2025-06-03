@@ -1,7 +1,6 @@
 package org.serratec.projetofinal_api_g4.domain;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

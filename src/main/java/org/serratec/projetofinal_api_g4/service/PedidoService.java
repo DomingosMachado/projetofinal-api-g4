@@ -286,27 +286,27 @@ public class PedidoService {
         return new PedidoDTO(pedidoAtualizado);
     }
 
-    @Transactional
-    public PedidoDTO cancelarPedido(Long id) {
-        Optional<Pedido> optionalPedido = pedidoRepository.findById(id);
-        if (!optionalPedido.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado com ID: " + id);
-        }
-
-        Pedido pedido = optionalPedido.get();
-
-        if (pedido.getStatus() != PedidoStatus.PENDENTE) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Apenas pedidos pendentes podem ser cancelados");
-        }
-
-        pedido.setStatus(PedidoStatus.CANCELADO);
-        pedido.setDataAtualizacao(LocalDateTime.now());
-        pedidoRepository.save(pedido);
-
-        emailService.enviarEmailCancelamento(pedido.getCliente().getEmail(), pedido);
-
-        return new PedidoDTO(pedido);
+ @Transactional
+public PedidoDTO cancelarPedido(Long id) {
+    Optional<Pedido> optionalPedido = pedidoRepository.findById(id);
+    if (!optionalPedido.isPresent()) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado com ID: " + id);
     }
+
+    Pedido pedido = optionalPedido.get();
+
+    if (pedido.getStatus() != PedidoStatus.PENDENTE) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Apenas pedidos pendentes podem ser cancelados");
+    }
+
+    pedido.setStatus(PedidoStatus.CANCELADO);
+    pedido.setDataAtualizacao(LocalDateTime.now()); // garanta que esse campo exista na entidade Pedido
+    pedidoRepository.save(pedido);
+
+    emailService.enviarEmailCancelamento(pedido.getCliente().getEmail(), pedido);
+
+    return new PedidoDTO(pedido);
+}
 
     @Transactional
     public PedidoDTO finalizarPedido(Long id) {

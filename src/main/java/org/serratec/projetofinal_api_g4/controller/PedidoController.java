@@ -57,7 +57,7 @@ public class PedidoController {
 
     @Operation(summary = "Listar pedidos de um cliente")
     @GetMapping("/cliente/{id}")
-    @PreAuthorize("@securityConfig.isOwner(#id) or hasAnyRole('ADMIN', 'VENDEDOR')")
+    @PreAuthorize("(@securityConfig.isOwner(#id) and hasRole('CLIENTE')) or hasAnyRole('ADMIN', 'VENDEDOR')")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedidos do cliente encontrados"),
             @ApiResponse(responseCode = "404", description = "Cliente não encontrado")
@@ -76,7 +76,7 @@ public class PedidoController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos"),
             @ApiResponse(responseCode = "404", description = "Cliente ou produto não encontrado")
     })
-    @PreAuthorize("hasRole('CLIENTE') or hasAnyRole('ADMIN', 'VENDEDOR')")
+     @PreAuthorize("(@securityConfig.isOwner(#id) and hasRole('CLIENTE')) or hasAnyRole('ADMIN', 'VENDEDOR')")
     @PostMapping
     public ResponseEntity<PedidoDTO> criar(@Valid @RequestBody PedidoDTO pedidoDTO) {
         PedidoDTO novoPedido = pedidoService.inserir(pedidoDTO);
@@ -90,7 +90,7 @@ public class PedidoController {
             @ApiResponse(responseCode = "400", description = "Pedido não pode ser cancelado"),
             @ApiResponse(responseCode = "403", description = "Não autorizado para cancelar este pedido")
     })
-    @PreAuthorize("(@securityConfig.isOwner(authentication.name, #id) and hasRole('CLIENTE')) or hasAnyRole('ADMIN', 'VENDEDOR')")
+    @PreAuthorize("(@securityConfig.isPedidoOwner(#id) and hasRole('CLIENTE')) or hasAnyRole('ADMIN', 'VENDEDOR')")
     @PatchMapping("/{id}/cancelar")
     public ResponseEntity<PedidoDTO> cancelarPedido(@PathVariable Long id) {
         try {
@@ -155,7 +155,7 @@ public class PedidoController {
             @ApiResponse(responseCode = "400", description = "Pedido não pode ser marcado como entregue"),
             @ApiResponse(responseCode = "403", description = "Apenas o cliente pode confirmar a entrega")
     })
-    @PreAuthorize("@securityConfig.isOwner(authentication.name, #id) and hasRole('CLIENTE')")
+    @PreAuthorize("@securityConfig.isPedidoOwner(#id) and hasRole('CLIENTE')")
     @PatchMapping("/{id}/entregar")
     public ResponseEntity<PedidoDTO> confirmarEntrega(@PathVariable Long id) {
         try {
@@ -173,7 +173,7 @@ public class PedidoController {
             @ApiResponse(responseCode = "400", description = "Pedido não pode ser excluído")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/deletar")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         try {
             pedidoService.deletar(id);

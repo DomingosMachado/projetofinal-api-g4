@@ -2,6 +2,7 @@ package org.serratec.projetofinal_api_g4.config;
 
 import org.serratec.projetofinal_api_g4.service.ClienteDetailsService;
 import org.serratec.projetofinal_api_g4.service.FuncionarioDetailsService;
+import org.serratec.projetofinal_api_g4.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +42,9 @@ public class SecurityConfig {
 
     @Autowired
     private FuncionarioDetailsService funcionarioDetailsService;
+
+    @Autowired
+    private PedidoService pedidoService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -130,6 +134,48 @@ public class SecurityConfig {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+     public boolean isPedidoOwner(Long pedidoId) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        // Buscar pedido pelo id
+        var pedidoOpt = pedidoService.buscarPorId(pedidoId);
+        if (pedidoOpt.isEmpty()) {
+            return false;
+        }
+
+        var pedido = pedidoOpt.get();
+
+        // Extrair id do usuário autenticado do username (igual ao isOwner)
+        String username;
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof User) {
+            username = ((User) principal).getUsername();
+        } else if (principal instanceof String) {
+            username = (String) principal;
+        } else {
+            return false;
+        }
+
+        String[] parts = username.split(":");
+        if (parts.length < 1) {
+            return false;
+        }
+
+        Long userId;
+        try {
+            userId = Long.parseLong(parts[0]);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        // Verifica se o pedido pertence ao cliente autenticado
+        return pedido.getCliente() != null && userId.equals(pedido.getCliente().getId());
     }
 
 }
