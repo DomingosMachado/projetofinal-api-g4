@@ -16,8 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
-
-
+import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -61,7 +60,7 @@ public class PedidoController {
 
     @Operation(summary = "Listar pedidos de um cliente")
     @GetMapping("/cliente/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR', 'CLIENTE')")
+    @PreAuthorize("@securityConfig.isOwner(#id) or hasAnyRole('ADMIN', 'VENDEDOR')")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Pedidos do cliente encontrados"),
         @ApiResponse(responseCode = "403", description = "Acesso negado"),
@@ -108,37 +107,87 @@ public class PedidoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(novoPedido);
     }
 
-    @Operation(summary = "Atualizar status do pedido")
+    @Operation(summary = "Cancelar pedido")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
+            @ApiResponse(responseCode = "200", description = "Pedido cancelado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
-            @ApiResponse(responseCode = "400", description = "Status inválido ou pedido não pode ser atualizado")
+            @ApiResponse(responseCode = "400", description = "Pedido não pode ser cancelado"),
+            @ApiResponse(responseCode = "403", description = "Não autorizado para cancelar este pedido")
+    })
+    @PreAuthorize("(@securityConfig.isOwner(authentication.name, #id) and hasRole('CLIENTE')) or hasAnyRole('ADMIN', 'VENDEDOR')")
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<PedidoDTO> cancelarPedido(@PathVariable Long id) {
+        try {
+            Optional<Pedido> pedidoOpt = pedidoService.buscarPorId(id);
+            if (!pedidoOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Pedido pedido = pedidoOpt.get();
+
+            // Verificar se o pedido pode ser cancelado
+            if (pedido.getStatus() != PedidoStatus.PENDENTE) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Pedido só pode ser cancelado quando está PENDENTE");
+            }
+
+            PedidoDTO pedidoCancelado = pedidoService.cancelarPedido(id);
+            return ResponseEntity.ok(pedidoCancelado);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
+    }
+
+    @Operation(summary = "Confirmar pedido (apenas Admin/Vendedor)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedido confirmado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
+            @ApiResponse(responseCode = "400", description = "Pedido não pode ser confirmado")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<PedidoDTO> atualizarStatus(@PathVariable Long id, @RequestParam String status) {
-        Optional<Pedido> pedidoOpt = pedidoService.buscarPorId(id);
-        if (!pedidoOpt.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        PedidoStatus novoStatus;
+    @PatchMapping("/{id}/confirmar")
+    public ResponseEntity<PedidoDTO> confirmarPedido(@PathVariable Long id) {
         try {
-            novoStatus = PedidoStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            PedidoDTO pedidoConfirmado = pedidoService.atualizarStatus(id, PedidoStatus.CONFIRMADO);
+            return ResponseEntity.ok(pedidoConfirmado);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
         }
+    }
 
-        Pedido pedido = pedidoOpt.get();
-        PedidoStatus statusAtual = pedido.getStatus();
-        
-        if (!pedidoService.isValidStatusTransition(statusAtual, novoStatus)) {
-            return ResponseEntity.badRequest().build();
+    @Operation(summary = "Enviar pedido (apenas Admin/Vendedor)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedido enviado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
+            @ApiResponse(responseCode = "400", description = "Pedido não pode ser enviado")
+    })
+    @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
+    @PatchMapping("/{id}/enviar")
+    public ResponseEntity<PedidoDTO> enviarPedido(@PathVariable Long id) {
+        try {
+            PedidoDTO pedidoEnviado = pedidoService.atualizarStatus(id, PedidoStatus.ENVIADO);
+            return ResponseEntity.ok(pedidoEnviado);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
         }
+    }
 
-        pedido.setStatus(novoStatus);
-        Pedido pedidoAtualizado = pedidoService.salvar(pedido);
-        return ResponseEntity.ok(new PedidoDTO(pedidoAtualizado));
+    @Operation(summary = "Confirmar entrega do pedido (apenas Cliente)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Entrega confirmada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado"),
+            @ApiResponse(responseCode = "400", description = "Pedido não pode ser marcado como entregue"),
+            @ApiResponse(responseCode = "403", description = "Apenas o cliente pode confirmar a entrega")
+    })
+    @PreAuthorize("@securityConfig.isOwner(authentication.name, #id) and hasRole('CLIENTE')")
+    @PatchMapping("/{id}/entregar")
+    public ResponseEntity<PedidoDTO> confirmarEntrega(@PathVariable Long id) {
+        try {
+            PedidoDTO pedidoEntregue = pedidoService.atualizarStatus(id, PedidoStatus.ENTREGUE);
+            return ResponseEntity.ok(pedidoEntregue);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
     }
 
     @Operation(summary = "Deletar pedido")
@@ -150,7 +199,11 @@ public class PedidoController {
     @PreAuthorize("hasAnyRole('ADMIN', 'VENDEDOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        pedidoService.deletar(id);
-        return ResponseEntity.noContent().build();
+        try {
+            pedidoService.deletar(id);
+            return ResponseEntity.noContent().build();
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
     }
 }

@@ -1,6 +1,7 @@
 package org.serratec.projetofinal_api_g4.enums;
 
 public enum PedidoStatus {
+    CARRINHO("Carrinho"), 
     PENDENTE("Pendente"),
     CONFIRMADO("Confirmado"),
     ENVIADO("Enviado"),
@@ -13,6 +14,11 @@ public enum PedidoStatus {
     }
 
     public String getDescricao() {
+        return descricao;
+    }
+
+    @Override
+    public String toString() {
         return descricao;
     }
 }

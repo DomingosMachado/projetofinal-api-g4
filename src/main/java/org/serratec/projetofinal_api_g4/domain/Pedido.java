@@ -81,4 +81,15 @@ public class Pedido {
         }
 
     }
+
+    public void setDataAtualizacao(LocalDateTime now) {
+        
+        if (now != null) {
+            this.dataPedido = now;
+         }
+            
+        
+
+    }
+
 }
