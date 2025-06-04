@@ -1,4 +1,6 @@
 Trabalho final de API, criação de Ecommerce 
+Branch principal: main 
+branch atualizada com os bugs da apresentação: mainAtualizada
 
 Membros:
 
