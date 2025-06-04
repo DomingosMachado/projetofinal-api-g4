@@ -9,6 +9,7 @@ import org.serratec.projetofinal_api_g4.dto.CarrinhoRequestDTO;
 import org.serratec.projetofinal_api_g4.dto.CarrinhoResponseDTO;
 import org.serratec.projetofinal_api_g4.dto.PedidoDTO;
 import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
+import org.serratec.projetofinal_api_g4.enums.TipoPedido;
 import org.serratec.projetofinal_api_g4.repository.CarrinhoProdutoRepository;
 import org.serratec.projetofinal_api_g4.repository.CarrinhoRepository;
 import org.serratec.projetofinal_api_g4.repository.ClienteRepository;
@@ -120,20 +121,27 @@ public class CarrinhoService {
                 carrinhoRepository.save(carrinho);
         }
 
-      @Transactional
+    @Transactional
 public PedidoDTO finalizarCarrinho(Long clienteId) {
     Carrinho carrinho = carrinhoRepository.findByClienteId(clienteId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
                     "Carrinho não encontrado para o cliente. Id: " + clienteId));
 
     if (carrinho.getItens().isEmpty()) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carrinho está vazio.");
     }
 
-    // Chama método único do PedidoService para criar pedido
-    Pedido pedido = pedidoService.criarPedido(carrinho.getCliente(), carrinho.getItens(), carrinho.getTotal(), PedidoStatus.PENDENTE);
+    // Cria o pedido com tipo CLIENTE
+    Pedido pedido = pedidoService.criarPedido(
+            carrinho.getCliente(),
+            carrinho.getItens(),
+            carrinho.getTotal(),
+            PedidoStatus.PENDENTE,
+            TipoPedido.CLIENTE // ← tipo explicitamente definido
+    );
 
-    // Limpa o carrinho após finalizar o pedido
+    // Limpa o carrinho
     carrinhoProdutoRepository.deleteAll(carrinho.getItens());
     carrinho.getItens().clear();
     carrinho.setTotal(BigDecimal.ZERO);
