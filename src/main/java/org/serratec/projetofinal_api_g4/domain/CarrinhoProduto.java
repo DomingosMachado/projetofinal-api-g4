@@ -33,7 +33,7 @@ public class CarrinhoProduto {
     @Column(nullable = false)
     private Integer quantidade;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoUnitario;
 
     @Column(precision = 10, scale = 2)

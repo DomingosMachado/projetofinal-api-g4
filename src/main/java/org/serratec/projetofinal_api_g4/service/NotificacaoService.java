@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
 import org.serratec.projetofinal_api_g4.service.canal.CanalNotificacao;
+import org.springframework.stereotype.Service;
 
+@Service
 public class NotificacaoService {
 
     // exemplo, e-mail, SMS
@@ -31,7 +33,7 @@ public class NotificacaoService {
         public LocalDateTime getDataEnvio() { return dataEnvio; }
     }
 
-    // método p adicionar um canal de notificação à lista pipipipopopo
+    // p adicionar um canal de notificação à lista pipipipopopo
     public void adicionarCanal(CanalNotificacao canal) {
         canais.add(canal);
     }

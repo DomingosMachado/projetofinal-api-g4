@@ -28,7 +28,10 @@ public class FornecedorController {
 
     @GetMapping
     @Operation(summary = "Listar todos os fornecedores")
-    public ResponseEntity<List<FornecedorDTO>> listarTodos() {
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    public ResponseEntity<List<FornecedorDTO>> listar() {
         return ResponseEntity.ok(fornecedorService.listarTodos());
     }
 
@@ -44,20 +47,34 @@ public class FornecedorController {
 
     @PostMapping
     @Operation(summary = "Inserir novo fornecedor")
-    public ResponseEntity<FornecedorDTO> inserir(@Valid @RequestBody FornecedorDTO dto) {
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Fornecedor criado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos ou CNPJ já cadastrado")
+    })
+    public ResponseEntity<FornecedorDTO> criar(@Valid @RequestBody FornecedorDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(fornecedorService.inserir(dto));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar fornecedor")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Fornecedor atualizado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+        @ApiResponse(responseCode = "404", description = "Fornecedor não encontrado")
+    })
     public ResponseEntity<FornecedorDTO> atualizar(@PathVariable Long id, @Valid @RequestBody FornecedorDTO dto) {
         return ResponseEntity.ok(fornecedorService.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar fornecedor")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Fornecedor deletado com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Fornecedor não encontrado"),
+        @ApiResponse(responseCode = "400", description = "Fornecedor com vínculos não pode ser excluído")
+    })
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         fornecedorService.deletar(id);
         return ResponseEntity.noContent().build();
     }
-}
+} 

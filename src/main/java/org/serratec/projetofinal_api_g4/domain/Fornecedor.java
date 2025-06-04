@@ -48,6 +48,7 @@ public class Fornecedor {
     this.nome = nome;
     this.cnpj = cnpj;
 }
+public Fornecedor(){}
  
   public Long getId() {
     return id;

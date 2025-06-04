@@ -23,8 +23,10 @@ public class PedidoDTO {
     private List<PedidoProdutoDTO> itens;
 
     private LocalDateTime dataPedido;
+    private LocalDateTime dataAtualizacao;
     private PedidoStatus status;
     private BigDecimal valorTotal;
+
 
     // Construtores
     public PedidoDTO() {}
@@ -33,6 +35,7 @@ public class PedidoDTO {
         this.id = pedido.getId();
         this.cliente = new ClienteDTO(pedido.getCliente());
         this.dataPedido = pedido.getDataPedido();
+        this.dataAtualizacao = pedido.getDataAtualizacao();
         this.status = pedido.getStatus();
         this.valorTotal = pedido.getValorTotal();
         
@@ -59,6 +62,8 @@ public class PedidoDTO {
 
     public LocalDateTime getDataPedido() { return dataPedido; }
     public void setDataPedido(LocalDateTime dataPedido) { this.dataPedido = dataPedido; }
+    public LocalDateTime getDataAtualizacao() { return dataAtualizacao; }
+    public void setDataAtualizacao(LocalDateTime dataAtualizacao) { this.dataAtualizacao = dataAtualizacao; }
 
     public PedidoStatus getStatus() { return status; }
     public void setStatus(PedidoStatus status) { this.status = status; }

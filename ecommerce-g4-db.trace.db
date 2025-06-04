@@ -644,7 +644,17 @@ SELECT p.*
 FROM pedido p
 WHERE p.cliente_id = 2
 ORDER BY p.data_pedido DESC [42102-232]
+<<<<<<< HEAD
+2025-06-02 20:19:49.558478-03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * [*]FROMPEDIDO_PRODUTO"; SQL statement:
+SELECT * FROMPEDIDO_PRODUTO [42000-232]
+2025-06-02 22:38:11.344338-03:00 jdbc[138]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PEDIDO" not found; SQL statement:
+SELECT * FROM PEDIDO [42102-232]
+2025-06-03 14:15:24.299338-03:00 jdbc[15]: null
+=======
 2025-06-02 12:07:31.604669-03:00 jdbc[26]: null
+>>>>>>> origin/DomingosMAchado
 org.h2.message.DbException: The connection was not closed by the application and is garbage collected [90018-232]
 	at org.h2.message.DbException.get(DbException.java:223)
 	at org.h2.message.DbException.get(DbException.java:199)
@@ -706,6 +716,10 @@ Caused by: org.h2.jdbc.JdbcSQLNonTransientConnectionException: The connection wa
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:690)
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
 	... 56 more
+<<<<<<< HEAD
+2025-06-03 14:16:45.250218-03:00 database: flush
+org.h2.message.DbException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/SERRATEC/OneDrive/Desktop/projetoapi/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]" [50000-232]
+=======
 2025-06-02 21:23:40.427182-03:00 jdbc[13]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PEDIDO" not found; SQL statement:
 SELECT * FROM pedido WHERE id = 867 [42102-232]
@@ -773,6 +787,7 @@ Caused by: org.h2.jdbc.JdbcSQLNonTransientConnectionException: The connection wa
 	... 56 more
 2025-06-03 15:35:01.893376-03:00 database: flush
 org.h2.message.DbException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/User/Documents/Serratec/API/API-Workspace/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]" [50000-232]
+>>>>>>> origin/DomingosMAchado
 	at org.h2.message.DbException.get(DbException.java:212)
 	at org.h2.message.DbException.convert(DbException.java:407)
 	at org.h2.mvstore.db.Store.lambda$new$0(Store.java:122)
@@ -838,19 +853,32 @@ org.h2.message.DbException: General error: "org.h2.mvstore.MVStoreException: The
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
 	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+<<<<<<< HEAD
+Caused by: org.h2.jdbc.JdbcSQLNonTransientException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/SERRATEC/OneDrive/Desktop/projetoapi/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]" [50000-232]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	... 65 more
+Caused by: org.h2.mvstore.MVStoreException: The file is locked: C:/Users/SERRATEC/OneDrive/Desktop/projetoapi/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]
+=======
 Caused by: org.h2.jdbc.JdbcSQLNonTransientException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/User/Documents/Serratec/API/API-Workspace/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]" [50000-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
 	... 65 more
 Caused by: org.h2.mvstore.MVStoreException: The file is locked: C:/Users/User/Documents/Serratec/API/API-Workspace/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]
+>>>>>>> origin/DomingosMAchado
 	at org.h2.mvstore.DataUtils.newMVStoreException(DataUtils.java:996)
 	at org.h2.mvstore.SingleFileStore.lockFileChannel(SingleFileStore.java:143)
 	at org.h2.mvstore.SingleFileStore.open(SingleFileStore.java:117)
 	at org.h2.mvstore.SingleFileStore.open(SingleFileStore.java:81)
 	at org.h2.mvstore.MVStore.<init>(MVStore.java:286)
 	... 59 more
+<<<<<<< HEAD
+2025-06-03 14:16:56.326661-03:00 database: flush
+org.h2.message.DbException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/SERRATEC/OneDrive/Desktop/projetoapi/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]" [50000-232]
+=======
 2025-06-03 15:35:03.757974-03:00 database: flush
 org.h2.message.DbException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/User/Documents/Serratec/API/API-Workspace/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]" [50000-232]
+>>>>>>> origin/DomingosMAchado
 	at org.h2.message.DbException.get(DbException.java:212)
 	at org.h2.message.DbException.convert(DbException.java:407)
 	at org.h2.mvstore.db.Store.lambda$new$0(Store.java:122)
@@ -920,17 +948,33 @@ org.h2.message.DbException: General error: "org.h2.mvstore.MVStoreException: The
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
 	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50)
+<<<<<<< HEAD
+Caused by: org.h2.jdbc.JdbcSQLNonTransientException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/SERRATEC/OneDrive/Desktop/projetoapi/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]" [50000-232]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	... 69 more
+Caused by: org.h2.mvstore.MVStoreException: The file is locked: C:/Users/SERRATEC/OneDrive/Desktop/projetoapi/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]
+=======
 Caused by: org.h2.jdbc.JdbcSQLNonTransientException: General error: "org.h2.mvstore.MVStoreException: The file is locked: C:/Users/User/Documents/Serratec/API/API-Workspace/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]" [50000-232]
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:566)
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
 	... 69 more
 Caused by: org.h2.mvstore.MVStoreException: The file is locked: C:/Users/User/Documents/Serratec/API/API-Workspace/projetofinal-api-g4/ecommerce-g4-db.mv.db [2.3.232/7]
+>>>>>>> origin/DomingosMAchado
 	at org.h2.mvstore.DataUtils.newMVStoreException(DataUtils.java:996)
 	at org.h2.mvstore.SingleFileStore.lockFileChannel(SingleFileStore.java:143)
 	at org.h2.mvstore.SingleFileStore.open(SingleFileStore.java:117)
 	at org.h2.mvstore.SingleFileStore.open(SingleFileStore.java:81)
 	at org.h2.mvstore.MVStore.<init>(MVStore.java:286)
 	... 63 more
+<<<<<<< HEAD
+<<<<<<< HEAD
+2025-06-03 15:23:55.054564-03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]PEDIDOS"; expected "PREPARE"; SQL statement:
+PEDIDOS [42001-232]
+=======
+>>>>>>> origin/DomingosMAchado
+=======
 2025-06-03 16:36:46.933311-03:00 jdbc[35]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Column "FORNECEDOR_ID" not found; SQL statement:
 
@@ -3308,3 +3352,4 @@ select p1_0.id,p1_0.cliente_id,p1_0.data_atualizacao,p1_0.data_pedido,p1_0.statu
 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
 	at java.base/java.lang.Thread.run(Thread.java:842)
+>>>>>>> dd412a0396ba0387079914e0f6e2b68dcccb4871
