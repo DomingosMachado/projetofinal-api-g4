@@ -3,7 +3,10 @@ package org.serratec.projetofinal_api_g4.exception;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,12 +21,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @RestControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(ControllerExceptionHandler.class);
 
     // 1. Tratamento para IllegalArgumentException (ex: validações customizadas)
     @ExceptionHandler(IllegalArgumentException.class)
     protected ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+        logger.warn("IllegalArgumentException: {}", ex.getMessage());
         ErroResposta erroResposta = new ErroResposta(
             HttpStatus.BAD_REQUEST.value(),
             "Dados inválidos",
@@ -38,7 +46,9 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         String mensagem = "Erro de integridade dos dados";
         List<String> erros = new ArrayList<>();
-        String exceptionMessage = ex.getMostSpecificCause().getMessage().toLowerCase();
+        String exceptionMessage = ex.getMostSpecificCause() != null 
+                                  ? ex.getMostSpecificCause().getMessage().toLowerCase()
+                                  : "";
 
         if (exceptionMessage.contains("cpf") || exceptionMessage.contains("uk_cpf")) {
             mensagem = "CPF já cadastrado";
@@ -49,6 +59,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         } else {
             erros.add("Violação de constraint de integridade dos dados");
         }
+
+        logger.warn("DataIntegrityViolationException: {}", mensagem);
 
         ErroResposta erroResposta = new ErroResposta(
             HttpStatus.CONFLICT.value(),
@@ -72,6 +84,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
             erros.add(fieldError.getField() + ": " + fieldError.getDefaultMessage());
         }
 
+        logger.warn("Validação falhou: {}", erros);
+
         ErroResposta erroResposta = new ErroResposta(
             status.value(),
             "Existem campos inválidos, confira o preenchimento",
@@ -89,32 +103,48 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
             @NonNull HttpHeaders headers,
             @NonNull HttpStatusCode status,
             @NonNull WebRequest request) {
-        
-        List<String> erros = new ArrayList<>();
-        String mensagemEspecifica = ex.getMostSpecificCause().getMessage();
 
-        if (mensagemEspecifica != null && mensagemEspecifica.toLowerCase().contains("enum")) {
-            erros.add("Valor de enumeração inválido: " + mensagemEspecifica);
-        } else if (mensagemEspecifica != null && mensagemEspecifica.toLowerCase().contains("json")) {
-            erros.add("Formato JSON inválido: " + mensagemEspecifica);
-        } else {
-            erros.add("Erro na leitura dos dados: " + (mensagemEspecifica != null ? mensagemEspecifica : ex.getMessage()));
+        String mensagem = "Dados mal formatados ou inválidos";
+        Throwable cause = ex.getMostSpecificCause();
+
+        if (cause != null) {
+            String msgCause = cause.getMessage().toLowerCase();
+            if (msgCause.contains("enum")) {
+                mensagem = "Valor de enumeração inválido";
+            } else if (msgCause.contains("json")) {
+                mensagem = "Formato JSON inválido";
+            }
         }
+
+        logger.warn("HttpMessageNotReadableException: {}", ex.getMessage());
 
         ErroResposta erroResposta = new ErroResposta(
             status.value(),
-            "Dados mal formatados ou inválidos",
+            mensagem,
             LocalDateTime.now(),
-            erros
+            List.of(ex.getLocalizedMessage())
         );
 
         return ResponseEntity.status(status).body(erroResposta);
     }
 
-    // 5. Tratamento genérico para RuntimeException não tratadas especificamente
+    // 5. Tratamento para recursos não encontrados
+    @ExceptionHandler({NoSuchElementException.class, EntityNotFoundException.class})
+    protected ResponseEntity<Object> handleNotFoundException(RuntimeException ex) {
+        logger.warn("Recurso não encontrado: {}", ex.getMessage());
+        ErroResposta erroResposta = new ErroResposta(
+            HttpStatus.NOT_FOUND.value(),
+            "Recurso não encontrado",
+            LocalDateTime.now(),
+            List.of(ex.getMessage())
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erroResposta);
+    }
+
+    // 6. Tratamento genérico para RuntimeException não tratadas especificamente
     @ExceptionHandler(RuntimeException.class)
     protected ResponseEntity<Object> handleRuntimeException(RuntimeException ex) {
-        ex.printStackTrace(); // Para debug em console (usar logger em produção)
+        logger.error("RuntimeException inesperada: ", ex);
         ErroResposta erroResposta = new ErroResposta(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "Erro interno do servidor",
@@ -124,10 +154,10 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(erroResposta);
     }
 
-    // 6. Tratamento fallback para Exception genérica
+    // 7. Tratamento fallback para Exception genérica
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<Object> handleGenericException(Exception ex) {
-        ex.printStackTrace(); // Para debug em console (usar logger em produção)
+        logger.error("Exception genérica inesperada: ", ex);
         ErroResposta erroResposta = new ErroResposta(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "Erro interno do servidor",

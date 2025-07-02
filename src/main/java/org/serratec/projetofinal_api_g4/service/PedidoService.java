@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.serratec.projetofinal_api_g4.domain.*;
 import org.serratec.projetofinal_api_g4.dto.*;
 import org.serratec.projetofinal_api_g4.enums.PedidoStatus;
+import org.serratec.projetofinal_api_g4.enums.TipoPedido;
 import org.serratec.projetofinal_api_g4.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,62 +148,77 @@ public class PedidoService {
     }
 
     @Transactional
-    public Pedido criarPedido(Cliente cliente, List<CarrinhoProduto> itens, BigDecimal total, PedidoStatus statusInicial) {
-        if (cliente == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cliente é obrigatório");
-        }
+public Pedido criarPedido(
+        Cliente cliente,
+        List<CarrinhoProduto> itens,
+        BigDecimal total,
+        PedidoStatus statusInicial,
+        TipoPedido tipoPedido) {
 
-        if (itens == null || itens.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Itens do pedido são obrigatórios");
-        }
-
-        Pedido pedido = new Pedido();
-        pedido.setCliente(cliente);
-        pedido.setDataPedido(LocalDateTime.now());
-        pedido.setStatus(statusInicial != null ? statusInicial : PedidoStatus.PENDENTE);
-        pedido.setValorTotal(BigDecimal.ZERO);
-
-        List<PedidoProduto> pedidoProdutos = itens.stream().map(carrinhoProduto -> {
-            Produto produto = carrinhoProduto.getProduto();
-            if (produto == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Produto inválido no carrinho");
-            }
-            if (produto.getEstoque() < carrinhoProduto.getQuantidade()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estoque insuficiente para o produto: " + produto.getNome());
-            }
-
-            PedidoProduto pedidoProduto = new PedidoProduto();
-            pedidoProduto.setPedido(pedido);
-            pedidoProduto.setProduto(produto);
-            pedidoProduto.setQuantidade(carrinhoProduto.getQuantidade());
-            pedidoProduto.setPrecoUnitario(carrinhoProduto.getPrecoUnitario());
-            pedidoProduto.setSubtotal(carrinhoProduto.getSubtotal());
-            return pedidoProduto;
-        }).toList();
-
-        pedido.setProdutos(pedidoProdutos);
-        pedido.atualizarValorTotal();
-
-        Pedido pedidoSalvo = pedidoRepository.save(pedido);
-        pedidoProdutoRepository.saveAll(pedidoProdutos);
-
-        pedidoProdutos.forEach(pp -> {
-            Produto p = pp.getProduto();
-            p.setEstoque(p.getEstoque() - pp.getQuantidade());
-            produtoRepository.save(p);
-        });
-
-        try {
-            emailService.enviarEmailPedido(
-                    pedidoSalvo.getCliente().getEmail(),
-                    pedidoSalvo.getCliente().getNome(),
-                    pedidoSalvo.getId().toString());
-        } catch (Exception e) {
-            System.err.println("Erro ao enviar email de confirmação: " + e.getMessage());
-        }
-
-        return pedidoSalvo;
+    if (cliente == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cliente é obrigatório");
     }
+
+    if (itens == null || itens.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Itens do pedido são obrigatórios");
+    }
+
+    if (tipoPedido == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de pedido é obrigatório");
+    }
+
+    Pedido pedido = new Pedido();
+    pedido.setCliente(cliente);
+    pedido.setDataPedido(LocalDateTime.now());
+    pedido.setDataAtualizacao(LocalDateTime.now());
+    pedido.setStatus(statusInicial != null ? statusInicial : PedidoStatus.PENDENTE);
+    pedido.setValorTotal(BigDecimal.ZERO);
+    pedido.setTipoPedido(tipoPedido); // ← ESSENCIAL
+
+    List<PedidoProduto> pedidoProdutos = itens.stream().map(carrinhoProduto -> {
+        Produto produto = carrinhoProduto.getProduto();
+        if (produto == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Produto inválido no carrinho");
+        }
+        if (produto.getEstoque() < carrinhoProduto.getQuantidade()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Estoque insuficiente para o produto: " + produto.getNome());
+        }
+
+        PedidoProduto pedidoProduto = new PedidoProduto();
+        pedidoProduto.setPedido(pedido);
+        pedidoProduto.setProduto(produto);
+        pedidoProduto.setQuantidade(carrinhoProduto.getQuantidade());
+        pedidoProduto.setPrecoUnitario(carrinhoProduto.getPrecoUnitario());
+        pedidoProduto.setSubtotal(carrinhoProduto.getSubtotal());
+        return pedidoProduto;
+    }).toList();
+
+    pedido.setProdutos(pedidoProdutos);
+    pedido.atualizarValorTotal();
+
+    Pedido pedidoSalvo = pedidoRepository.save(pedido);
+    pedidoProdutoRepository.saveAll(pedidoProdutos);
+
+    // Atualiza o estoque dos produtos
+    pedidoProdutos.forEach(pp -> {
+        Produto produto = pp.getProduto();
+        produto.setEstoque(produto.getEstoque() - pp.getQuantidade());
+        produtoRepository.save(produto);
+    });
+
+    // Envia email de confirmação
+    try {
+        emailService.enviarEmailPedido(
+                pedidoSalvo.getCliente().getEmail(),
+                pedidoSalvo.getCliente().getNome(),
+                pedidoSalvo.getId().toString());
+    } catch (Exception e) {
+        System.err.println("Erro ao enviar email de confirmação: " + e.getMessage());
+    }
+
+    return pedidoSalvo;
+}
 
     @Transactional
     public PedidoDTO atualizarPedido(Long id, PedidoDTO pedidoDTO) {
